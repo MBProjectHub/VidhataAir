@@ -396,11 +396,12 @@ let chartExample2 = {
     }
   },
   data: {
-    labels: ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    /* labels: ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] */
+    labels: ["Client-1", "Client-2", "Client-3", "Client-4", "Client-5", "Client-6"],
     datasets: [
       {
         label: "Sales",
-        data: [25, 20, 30, 22, 17, 29]
+        data: [85, 46, 118, 96, 54, 29]
       }
     ]
   }

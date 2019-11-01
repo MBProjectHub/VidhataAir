@@ -79,6 +79,16 @@ class Login extends React.Component {
                 <small>Or sign in with credentials</small>
               </div>
               <Form role="form">
+              <FormGroup>
+                  <InputGroup className="input-group-alternative mb-3">
+                    <InputGroupAddon addonType="prepend">
+                      <InputGroupText>
+                        <i className="ni ni-key-25" />
+                      </InputGroupText>
+                    </InputGroupAddon>
+                    <Input placeholder="Passcode" />
+                  </InputGroup>
+                </FormGroup>
                 <FormGroup className="mb-3">
                   <InputGroup className="input-group-alternative">
                     <InputGroupAddon addonType="prepend">

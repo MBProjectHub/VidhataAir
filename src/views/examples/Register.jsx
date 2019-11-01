@@ -83,6 +83,17 @@ class Register extends React.Component {
                   <InputGroup className="input-group-alternative mb-3">
                     <InputGroupAddon addonType="prepend">
                       <InputGroupText>
+                        <i className="ni ni-key-25" />
+                      </InputGroupText>
+                    </InputGroupAddon>
+                    <Input placeholder="Passcode" />
+                  </InputGroup>
+                </FormGroup>
+
+                <FormGroup>
+                  <InputGroup className="input-group-alternative mb-3">
+                    <InputGroupAddon addonType="prepend">
+                      <InputGroupText>
                         <i className="ni ni-hat-3" />
                       </InputGroupText>
                     </InputGroupAddon>
@@ -99,6 +110,7 @@ class Register extends React.Component {
                     <Input placeholder="Email" type="email" />
                   </InputGroup>
                 </FormGroup>
+                
                 <FormGroup>
                   <InputGroup className="input-group-alternative">
                     <InputGroupAddon addonType="prepend">

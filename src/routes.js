@@ -15,48 +15,56 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import Index from "views/Index.jsx";
-import Profile from "views/examples/Profile.jsx";
-import Maps from "views/examples/Maps.jsx";
+import Bookings from "screens/Bookings.jsx";
+import SignUpRequests from "screens/SignUpRequests.jsx";
+import GenerateBill from "screens/GenerateBill.jsx";
+import Notifications from "screens/Notifications.jsx";
+import Analytics from "screens/Analytics.jsx";
+import Profile from "screens/Profile.jsx";
 import Register from "views/examples/Register.jsx";
 import Login from "views/examples/Login.jsx";
-import Tables from "views/examples/Tables.jsx";
-import Icons from "views/examples/Icons.jsx";
 
 var routes = [
   {
-    path: "/index",
-    name: "Dashboard",
-    icon: "ni ni-tv-2 text-primary",
-    component: Index,
+    path: "/bookings",
+    name: "Bookings",
+    icon: "ni ni-send text-pink",
+    component: Bookings,
     layout: "/admin"
   },
   {
-    path: "/icons",
-    name: "Icons",
-    icon: "ni ni-planet text-blue",
-    component: Icons,
+    path: "/sign-up-requests",
+    name: "Sign Up Requests",
+    icon: "ni ni-badge text-blue",
+    component: SignUpRequests,
     layout: "/admin"
   },
   {
-    path: "/maps",
-    name: "Maps",
-    icon: "ni ni-pin-3 text-orange",
-    component: Maps,
+    path: "/generate-bill",
+    name: "Generate Bill",
+    icon: "ni ni-money-coins text-orange",
+    component: GenerateBill,
     layout: "/admin"
   },
   {
-    path: "/user-profile",
-    name: "User Profile",
-    icon: "ni ni-single-02 text-yellow",
+    path: "/notifications",
+    name: "Notifications",
+    icon: "ni ni-bell-55 text-yellow",
+    component: Notifications,
+    layout: "/admin"
+  },
+  {
+    path: "/analytics",
+    name: "Analytics",
+    icon: "ni ni-chart-bar-32 text-red",
+    component: Analytics,
+    layout: "/admin"
+  },
+  {
+    path: "/profile",
+    name: "Profile",
+    icon: "ni ni-single-02 text-info",
     component: Profile,
-    layout: "/admin"
-  },
-  {
-    path: "/tables",
-    name: "Tables",
-    icon: "ni ni-bullet-list-67 text-red",
-    component: Tables,
     layout: "/admin"
   },
   {

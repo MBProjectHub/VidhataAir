@@ -99,6 +99,7 @@ class Sidebar extends React.Component {
   render() {
     const { bgColor, routes, logo } = this.props;
     let navbarBrandProps;
+    console.log(logo);
     if (logo && logo.innerLink) {
       navbarBrandProps = {
         to: logo.innerLink,
@@ -241,9 +242,11 @@ class Sidebar extends React.Component {
             <Nav navbar>{this.createLinks(routes)}</Nav>
             {/* Divider */}
             <hr className="my-3" />
+
             {/* Heading */}
-            <h6 className="navbar-heading text-muted">Documentation</h6>
+            {/*<h6 className="navbar-heading text-muted">Documentation</h6>*/}
             {/* Navigation */}
+            {/*
             <Nav className="mb-md-3" navbar>
               <NavItem>
                 <NavLink href="https://demos.creative-tim.com/argon-dashboard-react/documentation/overview?ref=adr-admin-sidebar">
@@ -264,6 +267,8 @@ class Sidebar extends React.Component {
                 </NavLink>
               </NavItem>
             </Nav>
+            */}
+
           </Collapse>
         </Container>
       </Navbar>
