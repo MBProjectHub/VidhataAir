@@ -16,10 +16,8 @@
 
 */
 import Bookings from "screens/Bookings.jsx";
-import SignUpRequests from "screens/SignUpRequests.jsx";
-import GenerateBill from "screens/GenerateBill.jsx";
 import Notifications from "screens/Notifications.jsx";
-import Analytics from "screens/Analytics.jsx";
+import AboutUs from "screens/AboutUs.jsx";
 import Profile from "screens/Profile.jsx";
 import Register from "views/examples/Register.jsx";
 import Login from "views/examples/Login.jsx";
@@ -33,20 +31,6 @@ var routes = [
     layout: "/admin"
   },
   {
-    path: "/sign-up-requests",
-    name: "Sign Up Requests",
-    icon: "ni ni-badge text-blue",
-    component: SignUpRequests,
-    layout: "/admin"
-  },
-  {
-    path: "/generate-bill",
-    name: "Generate Bill",
-    icon: "ni ni-money-coins text-orange",
-    component: GenerateBill,
-    layout: "/admin"
-  },
-  {
     path: "/notifications",
     name: "Notifications",
     icon: "ni ni-bell-55 text-yellow",
@@ -54,17 +38,17 @@ var routes = [
     layout: "/admin"
   },
   {
-    path: "/analytics",
-    name: "Analytics",
-    icon: "ni ni-chart-bar-32 text-red",
-    component: Analytics,
-    layout: "/admin"
-  },
-  {
     path: "/profile",
     name: "Profile",
     icon: "ni ni-single-02 text-info",
     component: Profile,
+    layout: "/admin"
+  },
+  {
+    path: "/aboutus",
+    name: "About Us",
+    icon: "ni ni-bell-55 text-yellow",
+    component: AboutUs,
     layout: "/admin"
   },
   {

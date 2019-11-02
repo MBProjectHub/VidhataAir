@@ -57,19 +57,6 @@ class Notifications extends React.Component {
             <div class="container">
               <div class="row">
                 <div class="col">
-                  <button type="button" class="btn btn-default" style={{ width: '100%' }}>John Doe</button>
-                </div>
-                <div class="col-md-auto">
-                  <span class="lead"><i>To</i></span>
-                </div>
-                <div class="col">
-                  <div class="form-group">
-                    <input type="email" class="form-control form-control-alternative" style={{ width: '100%' }} id="exampleFormControlInput1" placeholder="Receiver Email"/>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col">
                 <form style={{ marginBottom: 20 }}>
                   <input class="form-control form-control-alternative" placeholder="Subject" type="text" style={{ marginBottom: 20 }} />
                   <textarea class="form-control form-control-alternative" rows="10" placeholder="Enter Custom Notification..."></textarea>
@@ -80,20 +67,13 @@ class Notifications extends React.Component {
               <div class="row">
                 <div class="col">
                   <div style={{display:'flex', alignItems:'center', justifyContent:'center'}}>
-                    <Button block color="info" size="lg" type="button" style={{marginBottom: 20, width: '80%'}}>
+                    <Button block color="info" size="lg" type="button" style={{marginBottom: 20, width: '50%'}}>
                       Send
                     </Button>
                   </div>
                 </div>
 
-                <div class="col">
-                  <InputGroup >
-                    <InputGroupAddon addonType="prepend" style={{width: '50%'}} >
-                      <Button style={{paddingLeft:'20%', paddingRight:'20%'}}  block color="info" size="lg"  type="button">Schedule Send</Button>
-                    </InputGroupAddon>
-                    <Input placeholder="dd/mm/yyyy" style={{paddingLeft:'10%',height: 51}}/>
-                  </InputGroup>
-                </div>
+                
               </div>
             </div>
           </Card>
