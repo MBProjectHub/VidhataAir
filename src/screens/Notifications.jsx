@@ -16,7 +16,7 @@
 
 */
 import React from "react";
-
+import _ from 'lodash'
 // reactstrap components
 import {
   Card,
@@ -30,10 +30,21 @@ import {
   Table,
   Media
 } from "reactstrap";
+
+// RCE CSS
+import 'react-chat-elements/dist/main.css';
+// MessageBox component
+import { MessageBox } from 'react-chat-elements';
+import '../assets/css/Notifications.css'
+
+import fire from '../config/firebaseConfig';
 // core components
 import EmptyHeader from "components/Headers/EmptyHeader.jsx";
 import NotifTabs from "components/NotifTabs.js";
 import ConversationSearch from '../components/ConversationSearch'
+
+
+import { Button as SemButton, Header, Icon, Image, Modal, Form, TextArea } from 'semantic-ui-react'
 
 class Notifications extends React.Component {
 
@@ -44,6 +55,13 @@ class Notifications extends React.Component {
       { from: 'Ruby', subject: 'Passport Expiry', timestamp: '07/09/2019 - 2:17'},
       { from: 'Fredrick', subject: 'Payment Verification', timestamp: '15/08/2019 - 12:59'}
   ]
+  }
+
+  componentWillMount()
+  {
+    fire.database().ref('notifications/').on('value', (thread)=>{
+      console.log(thread.val())
+    })
   }
 
   send() {
@@ -82,6 +100,40 @@ class Notifications extends React.Component {
     );
   }
 
+  
+  ChatModal(subject,from){
+    return(
+    <Modal style={{height:'fit-content', top:'10%', left:'20%'}} trigger={<button type="button" class="btn btn-success">Open</button>}>
+     <div style={{display:'flex', flexDirection:'row', height:'fit-content'}}>
+      <Modal.Header className="ModalHeader">{subject}</Modal.Header>
+      <p className="SenderDetails">{from}</p>
+      </div>
+      <Modal.Content className="ModalContent" scrolling>
+  
+        <Modal.Description>
+         
+          {_.times(18, (i) => (
+            <MessageBox
+            position={(i%2==0)?'right':'left'}
+            type={'text'}
+            text={'react.svg'}
+            />
+          ))}
+        </Modal.Description>
+      </Modal.Content>
+      <Modal.Actions style={{display: 'flex',
+                            justifyContent: 'space-between'}}>
+      <Form style={{width:window.innerWidth*0.4}}>
+        <TextArea placeholder='Type a message' rows={2}/>
+      </Form>
+        <SemButton primary>
+          Reply <Icon name='chevron right' />
+        </SemButton>
+      </Modal.Actions>
+    </Modal>
+    )
+  }
+
   getReceived() {
     var items = [];
 
@@ -103,7 +155,7 @@ class Notifications extends React.Component {
             {this.state.notifs[i].timestamp}
           </td>
           <td>
-            <button type="button" class="btn btn-success">Open</button>
+            {this.ChatModal(this.state.notifs[i].subject,this.state.notifs[i].from)}
           </td>
         </tr>
       );
@@ -146,6 +198,7 @@ class Notifications extends React.Component {
       </div>
     );
   }
+
 
   render() {
     return (

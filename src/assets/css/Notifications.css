@@ -1,0 +1,21 @@
+.ModalContent {
+    background: linear-gradient(87deg, #11cdef 0, #1171ef 100%) !important
+}
+
+.ModalHeader {
+    font-size: 1.42857143rem;
+    line-height: 1.28571429em;
+    font-weight: 700;
+    font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+    background: #fff;
+    margin: 0;
+    padding: 1.25rem 1.5rem;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    color: rgba(0,0,0,.85);
+    /* border-bottom: 1px solid rgba(34,36,38,.15); */
+}
+
+.SenderDetails {
+    padding: 1.5rem 0 0 0;
+}
