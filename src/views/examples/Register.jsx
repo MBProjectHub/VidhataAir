@@ -33,7 +33,34 @@ import {
   Col
 } from "reactstrap";
 
+
+import fire from '../../config/firebaseConfig'
+
 class Register extends React.Component {
+
+  firebaseRegister()
+  {
+    let passcode = document.getElementById('passcode').value;
+    let name = document.getElementById('name').value;
+    let email = document.getElementById('email').value;
+    let password = document.getElementById('password').value;
+
+    if(name.length!==0 && email.length!==0 && password.length!==0)
+    {
+      fire.auth().createUserWithEmailAndPassword(email, password)
+      .then(()=>{
+        fire.database().ref(`users/${fire.auth().currentUser.uid}`).set({
+          name: name,
+          email: email
+        })
+      })
+    }
+    else
+    {
+      alert("Please enter all the details");
+    }
+  }
+
   render() {
     return (
       <>
@@ -86,7 +113,7 @@ class Register extends React.Component {
                         <i className="ni ni-key-25" />
                       </InputGroupText>
                     </InputGroupAddon>
-                    <Input placeholder="Passcode" />
+                    <Input id="passcode" placeholder="Passcode" />
                   </InputGroup>
                 </FormGroup>
 
@@ -97,7 +124,7 @@ class Register extends React.Component {
                         <i className="ni ni-hat-3" />
                       </InputGroupText>
                     </InputGroupAddon>
-                    <Input placeholder="Name" type="text" />
+                    <Input id="name" placeholder="Name" type="text" />
                   </InputGroup>
                 </FormGroup>
                 <FormGroup>
@@ -107,10 +134,10 @@ class Register extends React.Component {
                         <i className="ni ni-email-83" />
                       </InputGroupText>
                     </InputGroupAddon>
-                    <Input placeholder="Email" type="email" />
+                    <Input id="email" placeholder="Email" type="email" />
                   </InputGroup>
                 </FormGroup>
-                
+
                 <FormGroup>
                   <InputGroup className="input-group-alternative">
                     <InputGroupAddon addonType="prepend">
@@ -118,7 +145,7 @@ class Register extends React.Component {
                         <i className="ni ni-lock-circle-open" />
                       </InputGroupText>
                     </InputGroupAddon>
-                    <Input placeholder="Password" type="password" />
+                    <Input id="password" placeholder="Password" type="password" />
                   </InputGroup>
                 </FormGroup>
                 <div className="text-muted font-italic">
@@ -150,7 +177,7 @@ class Register extends React.Component {
                   </Col>
                 </Row>
                 <div className="text-center">
-                  <Button className="mt-4" color="primary" type="button">
+                  <Button className="mt-4" color="primary" type="button" onClick={this.firebaseRegister.bind(this)}>
                     Create account
                   </Button>
                 </div>

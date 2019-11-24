@@ -33,7 +33,30 @@ import {
   Col
 } from "reactstrap";
 
+import fire from 'firebase'
+
 class Login extends React.Component {
+
+
+  firebaseLogin()
+  {
+    let email = document.getElementById('email').value;
+    let password = document.getElementById('password').value;
+
+    if(email.length!==0 && password.length!==0)
+    {
+      fire.auth().signInWithEmailAndPassword(email, password)
+      .then(()=>{
+        console.log(fire.auth().currentUser.uid)
+      })
+    }
+    else
+    {
+      alert("Please enter all the details");
+    }
+  }
+
+
   render() {
     return (
       <>
@@ -96,7 +119,7 @@ class Login extends React.Component {
                         <i className="ni ni-email-83" />
                       </InputGroupText>
                     </InputGroupAddon>
-                    <Input placeholder="Email" type="email" />
+                    <Input id="email" placeholder="Email" type="email" />
                   </InputGroup>
                 </FormGroup>
                 <FormGroup>
@@ -106,7 +129,7 @@ class Login extends React.Component {
                         <i className="ni ni-lock-circle-open" />
                       </InputGroupText>
                     </InputGroupAddon>
-                    <Input placeholder="Password" type="password" />
+                    <Input id="password" placeholder="Password" type="password" />
                   </InputGroup>
                 </FormGroup>
                 <div className="custom-control custom-control-alternative custom-checkbox">
@@ -123,7 +146,7 @@ class Login extends React.Component {
                   </label>
                 </div>
                 <div className="text-center">
-                  <Button className="my-4" color="primary" type="button">
+                  <Button className="my-4" color="primary" type="button" onClick={this.firebaseLogin.bind(this)}>
                     Sign in
                   </Button>
                 </div>
