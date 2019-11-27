@@ -1,4 +1,4 @@
-/*!
+/*
 
 =========================================================
 * Argon Dashboard React - v1.0.0
@@ -91,7 +91,7 @@ class Notifications extends React.Component {
                   </div>
                 </div>
 
-                
+
               </div>
             </div>
           </Card>
@@ -116,9 +116,9 @@ class Notifications extends React.Component {
       <p className="SenderDetails">{from}</p>
       </div>
       <Modal.Content className="ModalContent" scrolling>
-  
+
         <Modal.Description>
-         
+
           {_.times(18, (i) => (
             <MessageBox
             position={(i%2==0)?'right':'left'}

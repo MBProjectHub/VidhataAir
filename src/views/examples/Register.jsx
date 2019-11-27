@@ -44,7 +44,7 @@ class Register extends React.Component {
     let name = document.getElementById('name').value;
     let email = document.getElementById('email').value;
     let password = document.getElementById('password').value;
-    
+
     if(name.length!==0 && email.length!==0 && password.length!==0)
     {
       fire.auth().createUserWithEmailAndPassword(email, password)
@@ -137,7 +137,7 @@ class Register extends React.Component {
                     <Input id="email" placeholder="Email" type="email" />
                   </InputGroup>
                 </FormGroup>
-                
+
                 <FormGroup>
                   <InputGroup className="input-group-alternative">
                     <InputGroupAddon addonType="prepend">
