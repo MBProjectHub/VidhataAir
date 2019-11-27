@@ -43,9 +43,6 @@ class Bookings extends React.Component {
           <Row>
             <div className="col">
               <Card className="shadow">
-                <CardHeader className="border-0">
-                  <h3 className="mb-0">Booking Requests</h3>
-                </CardHeader>
                 <Messenger />
               </Card>
             </div>
