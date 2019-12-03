@@ -26,43 +26,43 @@ export default class Messenger extends React.Component {
       photo: "https://randomuser.me/api/portraits/men/67.jpg",
       text: "Google",
       stage: 0},
-      {photo: "https://randomuser.me/api/portraits/women/24.jpg", 
-      name: "Sonia Pearson", 
+      {photo: "https://randomuser.me/api/portraits/women/24.jpg",
+      name: "Sonia Pearson",
       text: "Facebook",
       stage: 0},
-      {photo: "https://randomuser.me/api/portraits/men/72.jpg", 
-      name: "Tim West", 
+      {photo: "https://randomuser.me/api/portraits/men/72.jpg",
+      name: "Tim West",
       text: "Amazon",
       stage: 1},
-      {photo: "https://randomuser.me/api/portraits/men/69.jpg", 
-      name: "Luke Clarke", 
+      {photo: "https://randomuser.me/api/portraits/men/69.jpg",
+      name: "Luke Clarke",
       text: "Lenovo",
       stage: 1},
-      {photo: "https://randomuser.me/api/portraits/men/54.jpg", 
-      name: "Gordon Chambers", 
+      {photo: "https://randomuser.me/api/portraits/men/54.jpg",
+      name: "Gordon Chambers",
       text: "Redmi",
       stage: 2},
       {name: "Romário da1 Rosa",
       photo: "https://randomuser.me/api/portraits/men/67.jpg",
       text: "Google",
       stage: 2},
-      {photo: "https://randomuser.me/api/portraits/women/24.jpg", 
-      name: "Sonia1 Pearson", 
+      {photo: "https://randomuser.me/api/portraits/women/24.jpg",
+      name: "Sonia1 Pearson",
       text: "Facebook",
       stage: 3},
-      {photo: "https://randomuser.me/api/portraits/men/72.jpg", 
-      name: "Tim1 West", 
+      {photo: "https://randomuser.me/api/portraits/men/72.jpg",
+      name: "Tim1 West",
       text: "Amazon",
       stage: 3},
-      {photo: "https://randomuser.me/api/portraits/men/69.jpg", 
-      name: "Luke1 Clarke", 
+      {photo: "https://randomuser.me/api/portraits/men/69.jpg",
+      name: "Luke1 Clarke",
       text: "Lenovo",
       stage: 0},
-      {photo: "https://randomuser.me/api/portraits/men/54.jpg", 
-      name: "Gordon1 Chambers", 
+      {photo: "https://randomuser.me/api/portraits/men/54.jpg",
+      name: "Gordon1 Chambers",
       text: "Redmi",
       stage: 2}
-    ], 
+    ],
 
     currentProgressStage:"",
     currentSelected:"",
@@ -70,11 +70,11 @@ export default class Messenger extends React.Component {
     cardOptions:[]
 
     }
-  
+
   ClickRequest(conversation)
   {
     this.state.conversations.forEach(conversation => {
-      document.getElementById(conversation.name).style.background = "#fff"  
+      document.getElementById(conversation.name).style.background = "#fff"
       });
       document.getElementById(conversation.name).style.background = "#eeeef1"
       this.setState({currentSelected:conversation.name, currentProgressStage:conversation.stage, currentConversation: conversation})
@@ -91,7 +91,7 @@ export default class Messenger extends React.Component {
     if(this.state.currentSelected!==conversation.name)
       document.getElementById(conversation.name).style.background = "#fff"
   }
-  
+
   renderProgressBar()
   {
     const theme = createMuiTheme({
@@ -149,7 +149,7 @@ export default class Messenger extends React.Component {
       { key: 'dz', value: 'dz', flag: 'dz', text: 'Algeria' },
       { key: 'as', value: 'as', flag: 'as', text: 'American Samoa' },
     ]
-    
+
     if(conversation.stage == 0)
     {
       return <div style={{height:'70%',paddingTop:'3%',marginTop:'2%',marginBottom:'2%', paddingBottom:'3%', overflowY:'scroll', width:'100%'}}>
@@ -198,11 +198,11 @@ export default class Messenger extends React.Component {
     else
     {
       return <div style={{height:'70%',paddingTop:'3%',marginTop:'2%',marginBottom:'2%', paddingBottom:'3%', overflowY:'scroll', width:'100%'}}>
-      
-      
+
+
       <RequestForm editable={true}/>
 
-      
+
       <div style={{width:'80%',marginLeft:'8%', marginTop:"5%"}}>
       <StyledDropZone onDrop={(file, text) => console.log(file, text)} />
       </div>
@@ -246,9 +246,9 @@ export default class Messenger extends React.Component {
     
     console.log(this.state.cardOptions)
     return (
-      <div className="messenger" style={{height: window.innerHeight*0.9}}>
+      <div className="messenger" style={{height: window.innerHeight*0.9, width:'100%'}}>
        
-        <div className="scrollable sidebar" style={{height:'100%'}}>
+        <div className="scrollable sidebar" style={{height:'100%', width:'25%'}}>
         <div className="conversation-list">
           <ConversationSearch placeholder="Search Bookings"/>
           {
