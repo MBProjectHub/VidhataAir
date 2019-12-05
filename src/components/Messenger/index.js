@@ -23,8 +23,54 @@ import fire from '../../config/firebaseConfig';
 
 export default class Messenger extends React.Component {
   state = {
+<<<<<<< HEAD
     bookings: {},
     conversations:[],
+=======
+    conversations:[
+      {name: "Romário da Rosa",
+      photo: "https://randomuser.me/api/portraits/men/67.jpg",
+      text: "Google",
+      stage: 0},
+      {photo: "https://randomuser.me/api/portraits/women/24.jpg",
+      name: "Sonia Pearson",
+      text: "Facebook",
+      stage: 0},
+      {photo: "https://randomuser.me/api/portraits/men/72.jpg",
+      name: "Tim West",
+      text: "Amazon",
+      stage: 1},
+      {photo: "https://randomuser.me/api/portraits/men/69.jpg",
+      name: "Luke Clarke",
+      text: "Lenovo",
+      stage: 1},
+      {photo: "https://randomuser.me/api/portraits/men/54.jpg",
+      name: "Gordon Chambers",
+      text: "Redmi",
+      stage: 2},
+      {name: "Romário da1 Rosa",
+      photo: "https://randomuser.me/api/portraits/men/67.jpg",
+      text: "Google",
+      stage: 2},
+      {photo: "https://randomuser.me/api/portraits/women/24.jpg",
+      name: "Sonia1 Pearson",
+      text: "Facebook",
+      stage: 3},
+      {photo: "https://randomuser.me/api/portraits/men/72.jpg",
+      name: "Tim1 West",
+      text: "Amazon",
+      stage: 3},
+      {photo: "https://randomuser.me/api/portraits/men/69.jpg",
+      name: "Luke1 Clarke",
+      text: "Lenovo",
+      stage: 0},
+      {photo: "https://randomuser.me/api/portraits/men/54.jpg",
+      name: "Gordon1 Chambers",
+      text: "Redmi",
+      stage: 2}
+    ],
+
+>>>>>>> 5626a644193a09dc2a83fc5910c19f9c56771aea
     currentProgressStage:"",
     currentSelected:"",
     currentConversation:{},
@@ -32,6 +78,7 @@ export default class Messenger extends React.Component {
 
     }
 
+<<<<<<< HEAD
   componentDidMount() {
     fire.database().ref('/bookings').on('value', snapshot => {
       this.setState({ bookings: snapshot.val() }, () => this.loadConvos());
@@ -75,6 +122,8 @@ export default class Messenger extends React.Component {
     this.setState({ conversations: tempConvos });
   }
 
+=======
+>>>>>>> 5626a644193a09dc2a83fc5910c19f9c56771aea
   ClickRequest(conversation)
   {
     this.state.conversations.forEach(conversation => {
@@ -201,7 +250,15 @@ export default class Messenger extends React.Component {
     else
     {
       return <div style={{height:'70%',paddingTop:'3%',marginTop:'2%',marginBottom:'2%', paddingBottom:'3%', overflowY:'scroll', width:'100%'}}>
+<<<<<<< HEAD
         <ConfirmationForm editable={true}/>
+=======
+
+
+      <RequestForm editable={true}/>
+
+
+>>>>>>> 5626a644193a09dc2a83fc5910c19f9c56771aea
       <div style={{width:'80%',marginLeft:'8%', marginTop:"5%"}}>
       <StyledDropZone onDrop={(file, text) => console.log(file, text)} />
       </div>
@@ -243,9 +300,15 @@ export default class Messenger extends React.Component {
   render()
   {
     return (
+<<<<<<< HEAD
       <div className="messenger" style={{height: window.innerHeight, width:'100%'}}>
 
         <div className="scrollable sidebar" style={{height: window.innerHeight, width:'25%'}}>
+=======
+      <div className="messenger" style={{height: window.innerHeight*0.9, width:'100%'}}>
+       
+        <div className="scrollable sidebar" style={{height:'100%', width:'25%'}}>
+>>>>>>> 5626a644193a09dc2a83fc5910c19f9c56771aea
         <div className="conversation-list">
           <ConversationSearch placeholder="Search Bookings"/>
           {

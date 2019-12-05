@@ -101,6 +101,13 @@ class Notifications extends React.Component {
   }
 
 
+  sendMessage()
+  {
+    let text = document.getElementById('messageBox').value
+    let uid = fire.auth().currentUser.uid;
+    
+  }
+  
   ChatModal(subject,from){
     return(
     <Modal style={{height:'fit-content', top:'10%', left:'20%'}} trigger={<button type="button" class="btn btn-success">Open</button>}>
@@ -124,9 +131,9 @@ class Notifications extends React.Component {
       <Modal.Actions style={{display: 'flex',
                             justifyContent: 'space-between'}}>
       <Form style={{width:window.innerWidth*0.4}}>
-        <TextArea placeholder='Type a message' rows={2}/>
+        <TextArea id="messageBox" placeholder='Type a message' rows={2}/>
       </Form>
-        <SemButton primary>
+        <SemButton id="reply" onClick={this.sendMessage.bind(this)} primary>
           Reply <Icon name='chevron right' />
         </SemButton>
       </Modal.Actions>
