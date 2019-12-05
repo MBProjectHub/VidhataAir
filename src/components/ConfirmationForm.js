@@ -14,7 +14,7 @@ import {
   Col
 } from "reactstrap";
 
-class Requestform extends React.Component {
+class ConfirmationForm extends React.Component {
 
   state = {
     dept: '',
@@ -35,11 +35,6 @@ class Requestform extends React.Component {
             this.setState(snapshot.val());
         }
       )
-  }
-
-  submit() {
-  fire.database().ref(
-    '/bookings/active/'+this.props.data.threadId+'/request/details').update(this.state);
   }
 
   getNameFields(num) {
@@ -254,17 +249,6 @@ class Requestform extends React.Component {
                       {this.getNameFields(this.state.numTrav-1)}
                     </div>
                     <hr className="my-4" />
-                    <div className="pl-lg-4">
-                    <Row>
-                      <Col lg="12">
-                        <FormGroup>
-                          <Button color="info" type="button" onClick={() => this.submit()} style={{ marginLeft: '80%' }}>
-                            Submit
-                          </Button>
-                        </FormGroup>
-                      </Col>
-                    </Row>
-                  </div>
                   </Form>
                 </CardBody>
               </Card>
@@ -274,4 +258,4 @@ class Requestform extends React.Component {
       }
 
 
-export default Requestform
+export default ConfirmationForm
