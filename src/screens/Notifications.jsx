@@ -43,7 +43,7 @@ import EmptyHeader from "components/Headers/EmptyHeader.jsx";
 import NotifTabs from "components/NotifTabs.js";
 import ConversationSearch from '../components/ConversationSearch'
 
-import { Button as SemButton, Header, Icon, Image, Modal, Form, TextArea, Label } from 'semantic-ui-react'
+import { Button as SemButton, Header, Icon, Image, Modal, Form, TextArea, Label, Loader, Dimmer } from 'semantic-ui-react'
 
 class Notifications extends React.Component {
 
@@ -316,6 +316,16 @@ class Notifications extends React.Component {
     return items;
   }
 
+  loadingBar()
+  {
+    if(this.state.notifs.length === 0)
+    {
+      return <Dimmer active>
+      <Loader size='large'>Loading</Loader>
+    </Dimmer>
+    }
+  }
+
   received() {
     return (
       <div class="table-responsive">
@@ -324,6 +334,10 @@ class Notifications extends React.Component {
             <CardHeader className="border-0">
               <h3 className="mb-0">Your Notifications</h3>
               <ConversationSearch placeholder="Search Notifications"/>
+              {this.loadingBar()}
+              
+                
+              
             </CardHeader>
               <table class="table align-items-center">
                 <thead class="thead-light">
