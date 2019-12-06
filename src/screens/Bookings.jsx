@@ -25,7 +25,7 @@ import {
   Row
 } from "reactstrap";
 // core components
-import Header from "../components/Headers/EmptyHeader.jsx";
+import EmptyHeader from "../components/Headers/EmptyHeader.jsx";
 import Messenger from "components/Messenger";
 import AnalyticsHeader from '../components/Headers/AnalyticsHeader'
 
@@ -33,10 +33,11 @@ class Bookings extends React.Component {
   render() {
     return (
       <>
-        <Header />
+        <EmptyHeader />
         {/* Page content */}
         <div className="bg-gradient-info pb-8 pt-5 pt-md-8" style={{position:'absolute', marginTop:'10%', top:'70%', width:'100%'}}>
-        <AnalyticsHeader />
+        <div style={{ height: 0 }} />
+          <AnalyticsHeader />
         </div>
         <Container className="mt--7 "  fluid>
           {/* Table */}
@@ -47,9 +48,9 @@ class Bookings extends React.Component {
               </Card>
             </div>
           </Row>
-          
+
         </Container>
-        
+
       </>
     );
   }
