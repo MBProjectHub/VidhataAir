@@ -50,7 +50,7 @@ class Options extends React.Component {
       if(this.state.data.status == 1) {
         return (
           <div>
-            <Alert color="success" style={{ marginTop: '3%', textAlign: 'center' }}>
+            <Alert color="info" style={{ marginTop: '3%', textAlign: 'center' }}>
               <img src={require('../assets/img/icons/common/tick.png')} style={{width:15, height:15, marginRight: 10}}/>
               Selected Flight Option
             </Alert>
@@ -71,7 +71,7 @@ class Options extends React.Component {
       } else if(this.state.data.status == 2) {
         return (
           <div>
-            <Alert color="info" style={{ marginTop: '3%', textAlign: 'center' }}>
+            <Alert color="success" style={{ marginTop: '3%', textAlign: 'center' }}>
               <i className="fa fa-thumbs-up" style={{ marginRight: 10 }} />
               Flight Option Approved
             </Alert>
