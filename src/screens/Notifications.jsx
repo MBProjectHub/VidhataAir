@@ -54,28 +54,41 @@ class Notifications extends React.Component {
    currentSubject:'',
    currentFrom:'',
     currentToken:'',
-    notifications:{}
+    notifications:{},
+    uid:''
   }
 
-  
   componentDidMount()
   {
+    fire.auth().onAuthStateChanged((user) => {
+      if(user)
+      {
+        console.log('sd')
+        this.setState({uid: fire.auth().currentUser.uid},()=>{
+          
     this.retrieveFirebaseData()
+        })
+      }
+    })
   }
 
 
   retrieveFirebaseData()
   {
+   
+        let notifications = {}
+        let notifications_arr = []
+        console.log('my time')
+        fire.database().ref(`users/${this.state.uid}/notifications/`).once('value', (notifs)=>{
+          //notifications = notifs.val()
+          notifs.forEach(notification=>{
+              notifications_arr.push({token:notification.key, subject: notification.val().subject, timestamp:notification.val().timestamp})
+          })
+          this.setState({notifs: notifications_arr})
+        })
+      
+  
     
-    let notifications = {}
-    let notifications_arr = []
-    fire.database().ref('notifications/').once('value', (notifs)=>{
-      //notifications = notifs.val()
-      notifs.forEach(notification=>{
-          notifications_arr.push({token:notification.key, name: notification.val().name, subject: notification.val().subject, timestamp:notification.val().timestamp})
-      })
-      this.setState({notifs: notifications_arr})
-    })
   
   }
   
@@ -131,6 +144,9 @@ class Notifications extends React.Component {
             subject: subject,
             timestamp: ""+date+"/"+month+"/"+year+" "+hour+":"+mins,
             name: name.val()
+          }, ()=>{
+            
+    this.retrieveFirebaseData()
           })
         }
         )
@@ -141,7 +157,6 @@ class Notifications extends React.Component {
     document.getElementById("notify_sub").value = ""
     document.getElementById("notify_msg").value = ""
     
-    this.retrieveFirebaseData()
     }
   }
 
@@ -217,12 +232,10 @@ class Notifications extends React.Component {
 
   ChatModal(){
     let subject = this.state.currentSubject
-    let from = this.state.currentFrom
     return(
     <Modal style={{height:'fit-content', top:'10%', left:'20%'}} open={this.state.open} onClose={this.close.bind(this)}>
      <div style={{display:'flex', flexDirection:'row', height:'fit-content'}}>
       <Modal.Header className="ModalHeader">{subject}</Modal.Header>
-      <p className="SenderDetails">{from}</p>
       </div>
       <Modal.Content className="ModalContent" style={{minHeight:window.innerHeight*(0.6)}} scrolling>
 
@@ -259,7 +272,7 @@ class Notifications extends React.Component {
     )
   }
 
-  openChatModal(subject, from, token)
+  openChatModal(subject, token)
   {
     
     let conversations = []
@@ -276,7 +289,7 @@ class Notifications extends React.Component {
         }
         conversations.push(val)
       })
-      this.setState({currentModalConvos: conversations, open:true, currentSubject: subject, currentFrom: from, currentToken: token}) 
+      this.setState({currentModalConvos: conversations, open:true, currentSubject: subject, currentToken: token}) 
     }) 
     console.log(conversations)
 
@@ -291,9 +304,6 @@ class Notifications extends React.Component {
     {
       items.push(
         <tr>
-          <td>
-            {this.state.notifs[i].name}
-          </td>
           <th scope="row" class="name">
             <div class="media align-items-center">
               <div class="media-body">
@@ -306,7 +316,7 @@ class Notifications extends React.Component {
           </td>
           <td>
             <button type="button" class="btn btn-success" 
-            onClick={this.openChatModal.bind(this, this.state.notifs[i].subject,this.state.notifs[i].name,this.state.notifs[i].token)}>Open</button>
+            onClick={this.openChatModal.bind(this, this.state.notifs[i].subject,this.state.notifs[i].token)}>Open</button>
             
           </td>
         </tr>
@@ -342,9 +352,6 @@ class Notifications extends React.Component {
               <table class="table align-items-center">
                 <thead class="thead-light">
                     <tr>
-                        <th scope="col">
-                            From
-                        </th>
                         <th scope="col">
                             Subject
                         </th>
