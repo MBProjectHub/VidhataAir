@@ -2,12 +2,7 @@ import React from 'react';
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
-import {Row, Col, Container, Button} from 'reactstrap'
-
-import { StyledDropZone } from 'react-drop-zone'
-import 'react-drop-zone/dist/styles.css'
-
-import { Dropdown, Input } from 'semantic-ui-react'
+import {Row, Col, Container, Button } from 'reactstrap'
 
 import { createMuiTheme } from '@material-ui/core/styles';
 import { ThemeProvider } from '@material-ui/styles';
@@ -19,6 +14,7 @@ import '../ConversationListItem.css';
 import ProfileCard from '../ProfileCard'
 import RequestForm from '../RequestForm'
 import ConfirmationForm from '../ConfirmationForm'
+import Options from '../Options'
 import fire from '../../config/firebaseConfig';
 
 export default class Messenger extends React.Component {
@@ -27,9 +23,7 @@ export default class Messenger extends React.Component {
     conversations:[],
     currentProgressStage:"",
     currentSelected:"",
-    currentConversation:{},
-    cardOptions:[]
-
+    currentConversation:{}
     }
 
   componentDidMount() {
@@ -43,7 +37,7 @@ export default class Messenger extends React.Component {
     {
       case 0: return 'request';
       case 1: return 'options';
-      case 2: return 'request';
+      case 2: return 'confirmation';
       default: return '';
     }
   }
@@ -116,7 +110,7 @@ export default class Messenger extends React.Component {
       },
     });
 
-    let steps = ['Initiate Request', 'Flight Options', 'Booking Confirmation', 'Travel Complete'];
+    let steps = ['Initiate Request', 'Flight Options', 'Booking Confirmation', 'Booking Complete'];
     if(this.state.currentProgressStage==="")
     return
     else
@@ -135,24 +129,8 @@ export default class Messenger extends React.Component {
     }
   }
 
-
-  renderBookingOptions()
-  {
-    return this.state.cardOptions.map(cards=>{
-      return cards
-    })
-  }
-
   loadContent(conversation)
   {
-    const countryOptions = [
-      { key: 'af', value: 'af', flag: 'af', text: 'Afghanistan' },
-      { key: 'ax', value: 'ax', flag: 'ax', text: 'Aland Islands' },
-      { key: 'al', value: 'al', flag: 'al', text: 'Albania' },
-      { key: 'dz', value: 'dz', flag: 'dz', text: 'Algeria' },
-      { key: 'as', value: 'as', flag: 'as', text: 'American Samoa' },
-    ]
-
     if(conversation.stage == 0)
     {
       return <div style={{height:'70%',paddingTop:'3%',marginTop:'2%',marginBottom:'2%', paddingBottom:'3%', overflowY:'scroll', width:'100%'}}>
@@ -160,52 +138,11 @@ export default class Messenger extends React.Component {
     </div>
     }
     else if(conversation.stage == 1)
-    {
-      return <div style={{height:'75%', marginBottom:'2%',paddingLeft:'7%', paddingTop:'4%', paddingBottom:'4%', overflowY:'scroll', width:'100%',backgroundColor:'#f8f9fe'}}>
-
-      {this.renderBookingOptions()}
-
-      <a class="ui card" onClick={()=>{
-        let cardOptions = this.state.cardOptions
-        cardOptions.push(
-        <div><a class="ui card"style={{ background:'#fff', width:'50%', boxShadow:'0 5px 9px 0 #fafafa, 0 0 0 1px #fafafa', marginBottom:'3%'}}>
-        <div class="content">
-        <div class="header" style={{marginBottom:'5px'}}>Choose Flight</div>
-      <Dropdown
-    placeholder='Select Country'
-    fluid
-    search
-    selection
-    options={countryOptions}
-  />
-    <div style={{display:'flex', flexDirection:'row',alignItems:'center', marginTop:'3%'}}>
-    <Input style={{width:'31%', marginRight:'20%'}} label='To' placeholder='mysite.com' />
-    <Input style={{width:'31%'}} label='From' placeholder='mysite.com' />
-    </div>
-    </div>
-    <div class="extra content">
-      <div class="ui two buttons">
-        <button class="ui negative button">Delete</button>
-      </div>
-        </div>
-      </a></div>
-      )
-      this.setState({cardOptions:cardOptions})
-      }}  style={{border:'2px dashed rgb(94, 114, 228)', background:'#5e72e450', width:'50%', height:'25%', boxShadow:'0 5px 9px 0 #d4d4d5, 0 0 0 1px #d4d4d5'}}>
-      <div class="content" style={{display:'flex',alignItems:'center', justifyContent:'center',}}>
-        <img src={require('../../assets/img/icons/common/plus.png')} style={{width:50, height:50}}/>
-      </div>
-    </a>
-    </div>
-    }
+      return <Options data={this.state.currentConversation} />
     else
     {
       return <div style={{height:'70%',paddingTop:'3%',marginTop:'2%',marginBottom:'2%', paddingBottom:'3%', overflowY:'scroll', width:'100%'}}>
         <ConfirmationForm editable={true}/>
-      <div style={{width:'80%',marginLeft:'8%', marginTop:"5%"}}>
-      <StyledDropZone onDrop={(file, text) => console.log(file, text)} />
-      </div>
-
     </div>
     }
   }
@@ -230,7 +167,7 @@ export default class Messenger extends React.Component {
 
         {this.loadContent(this.state.currentConversation)}
 
-        <div  style={{position:'absolute' ,bottom :0 , width:'100%',height:'9%', backgroundColor:'#FAFAFA', boxShadow: '0 -10px 15px -10px rgba(0,0,0,0.22)'}}>
+        <div  style={{position:'absolute', zIndex: 10, bottom :0 , width:'100%',height:'9%', backgroundColor:'#FAFAFA', boxShadow: '0 -10px 15px -10px rgba(0,0,0,0.22)'}}>
         <Button color="primary" type="button" style={{position:'absolute',right:'5%', bottom:'10%'}}>
           Handle Request
         </Button>
