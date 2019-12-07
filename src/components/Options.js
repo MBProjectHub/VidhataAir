@@ -51,7 +51,7 @@ class Options extends React.Component {
         return (
           <div>
             <Alert color="success" style={{ marginTop: '3%', textAlign: 'center' }}>
-              <img src={require('../assets/img/icons/common/tick.png')} style={{width:25, height:25, marginRight: 10}}/>
+              <img src={require('../assets/img/icons/common/tick.png')} style={{width:15, height:15, marginRight: 10}}/>
               Selected Flight Option
             </Alert>
           </div>
