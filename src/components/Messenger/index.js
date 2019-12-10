@@ -177,7 +177,7 @@ export default class Messenger extends React.Component {
     if(this.state.currentProgressStage != 0)
       this.setState({ loading: true });
     }
-  else if(label == steps[1] && this.state.bookings.active[this.state.currentConversation.threadId].Ustage == 1) {
+  else if(label == steps[1] && this.state.bookings.active[this.state.currentConversation.threadId].options.opts) {
     fire.database().ref('/bookings/active/'+this.state.currentConversation.threadId).update({ Ustage: 1 });
     if(this.state.currentProgressStage != 1)
       this.setState({ loading: true });
