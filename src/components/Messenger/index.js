@@ -1,7 +1,5 @@
 import React from 'react';
-import Stepper from '@material-ui/core/Stepper';
-import Step from '@material-ui/core/Step';
-import StepLabel from '@material-ui/core/StepLabel';
+import { Step, Stepper, StepLabel, LinearProgress } from '@material-ui/core';
 import {Row, Col, Container, Button } from 'reactstrap'
 
 import { createMuiTheme } from '@material-ui/core/styles';
@@ -23,7 +21,9 @@ export default class Messenger extends React.Component {
     conversations:[],
     currentProgressStage:"",
     currentSelected:"",
-    currentConversation:{}
+    currentConversation:{},
+    newBooking: false,
+    loading: true
     }
 
   componentDidMount() {
@@ -45,50 +45,144 @@ export default class Messenger extends React.Component {
   async loadConvos() {
     let threads = Object.keys(this.state.bookings.active)
     let tempConvos = [];
+    let tempCur = {};
     for(var i=0; i < threads.length; i++)
     {
         let tid = threads[i];
         let uid = this.state.bookings.active[tid].uid;
-        let st = this.state.bookings.active[tid].stage;
+        let st = this.state.bookings.active[tid].Ustage;
         let h = this.state.bookings.active[tid][this.trans(st)].handler;
         let ha = this.state.bookings.active[tid][this.trans(st)].handledAt;
         let a = this.state.bookings.active[tid][this.trans(st)].arrivedAt;
+        let dept = this.state.bookings.active[tid].request.details.dept;
+        let arr = this.state.bookings.active[tid].request.details.arr;
         await fire.database().ref('/users/'+uid).once('value', snapshot => {
-          tempConvos.push({
+          tempConvos.unshift({
             threadId: tid,
-            photo: "https://randomuser.me/api/portraits/men/54.jpg",
             name: snapshot.val().name,
-            text: snapshot.val().company,
+            text: dept + ' > ' + arr,
             stage: st,
             handler: h,
             handledAt: ha,
             arrivedAt: a
           })
         });
+        if(tid == this.state.currentConversation.threadId)
+          tempCur = tempConvos[0];
     }
-    this.setState({ conversations: tempConvos });
+    if(Object.keys(tempCur).length != 0) {
+      this.setState({
+        conversations: tempConvos,
+        currentSelected: tempCur.threadId,
+        currentProgressStage: tempCur.stage,
+        currentConversation: tempCur,
+        loading: false
+      }, () => {
+        if(this.state.newBooking)
+          this.setState({
+            newBooking: false,
+            currentSelected: this.state.conversations[0].name,
+            currentProgressStage: this.state.conversations[0].stage,
+            currentConversation: this.state.conversations[0]
+          });
+      });
+    } else
+      this.setState({
+        conversations: tempConvos,
+        loading: false
+      }, () => {
+        if(this.state.newBooking)
+          this.setState({
+            newBooking: false,
+            currentSelected: this.state.conversations[0].name,
+            currentProgressStage: this.state.conversations[0].stage,
+            currentConversation: this.state.conversations[0]
+          });
+      });
+  }
+
+  newBooking() {
+    let newThread = {}
+    newThread['booking_' + this.getTimestamp(5,30)] = {
+      confirmation : {
+        arrivedAt : '-',
+        details : '-',
+        handledAt : '-',
+        handler : '-'
+      },
+      options : {
+        arrivedAt : '-',
+        choice : -1,
+        handledAt : '-',
+        handler : '-',
+        status : -1
+      },
+      request : {
+        arrivedAt : '-',
+        details : '-',
+        handledAt : '-',
+        handler : '-'
+      },
+      Estage: -1,
+      Ustage : 0,
+      uid : 'uid1' // fire.auth().currentUser.uid
+    }
+    fire.database().ref('/bookings/active').update(newThread);
+    this.setState({ newBooking: true, loading: true })
   }
 
   ClickRequest(conversation)
   {
     this.state.conversations.forEach(conversation => {
-      document.getElementById(conversation.name).style.background = "#fff"
+      document.getElementById(conversation.threadId).style.background = "#fff"
       });
-      document.getElementById(conversation.name).style.background = "#eeeef1"
-      this.setState({currentSelected:conversation.name, currentProgressStage:conversation.stage, currentConversation: conversation})
+      document.getElementById(conversation.threadId).style.background = "#eeeef1"
+      this.setState({currentSelected:conversation.threadId, currentProgressStage:conversation.Ustage, currentConversation: conversation})
   }
 
   MouseOverRequest(conversation)
   {
-    if(this.state.currentSelected!==conversation.name)
-      document.getElementById(conversation.name).style.background = "#eeeef1"
+    if(this.state.currentSelected!==conversation.threadId)
+      document.getElementById(conversation.threadId).style.background = "#eeeef1"
   }
 
   MouseOutRequest(conversation)
   {
-    if(this.state.currentSelected!==conversation.name)
-      document.getElementById(conversation.name).style.background = "#fff"
+    if(this.state.currentSelected!==conversation.threadId)
+      document.getElementById(conversation.threadId).style.background = "#fff"
   }
+
+  getTimestamp(h,m) {
+    var t = new Date();
+    t.setHours(t.getUTCHours() + h);
+    t.setMinutes(t.getUTCMinutes() + m);
+
+    var timestamp =
+        t.getUTCFullYear() + "_" +
+        ("0" + (t.getMonth()+1)).slice(-2) + "_" +
+        ("0" + t.getDate()).slice(-2) + "_" +
+        ("0" + t.getHours()).slice(-2) + "_" +
+        ("0" + t.getMinutes()).slice(-2) + "_" +
+        ("0" + t.getSeconds()).slice(-2) + "_" +
+        ("0" + t.getMilliseconds()).slice(-2);
+
+    return timestamp;
+  }
+
+  stageClick(label) {
+  let steps = ['Initiate Request', 'Flight Options', 'Booking Confirmation', 'Booking Complete'];
+
+  if(label == steps[0]) {
+    fire.database().ref('/bookings/active/'+this.state.currentConversation.threadId).update({ Ustage: 0 });
+    if(this.state.currentProgressStage != 0)
+      this.setState({ loading: true });
+    }
+  else if(label == steps[1] && this.state.bookings.active[this.state.currentConversation.threadId].Ustage == 1) {
+    fire.database().ref('/bookings/active/'+this.state.currentConversation.threadId).update({ Ustage: 1 });
+    if(this.state.currentProgressStage != 1)
+      this.setState({ loading: true });
+    }
+}
 
   renderProgressBar()
   {
@@ -119,7 +213,7 @@ export default class Messenger extends React.Component {
         <Stepper style={{height:100, padding:10, backgroundColor:'transparent'}} alternativeLabel activeStep={this.state.currentProgressStage}>
       {steps.map(label => (
         <Step  key={label}>
-        <StepLabel label= {{color:'#fff'}} style={{color:'#fff'}} onClick={()=>{console.log("hi")}}>
+        <StepLabel label= {{color:'#fff'}} style={{color:'#fff'}} onClick={() => this.stageClick(label)}>
           {label}
         </StepLabel>
         </Step>
@@ -168,14 +262,36 @@ export default class Messenger extends React.Component {
         {this.loadContent(this.state.currentConversation)}
 
         <div  style={{position:'absolute', zIndex: 10, bottom :0 , width:'100%',height:'9%', backgroundColor:'#FAFAFA', boxShadow: '0 -10px 15px -10px rgba(0,0,0,0.22)'}}>
-        <Button color="primary" type="button" style={{position:'absolute',right:'5%', bottom:'10%'}}>
-          Handle Request
-        </Button>
         </div>
     </div>
-
     }
   }
+
+  loadLeftPane() {
+      return this.state.conversations.map(conversation =>
+        <div
+          id={conversation.threadId}
+          className="conversation-list-item"
+          style={{ display: 'flex', flexDirection: 'row' }}
+          onClick={this.ClickRequest.bind(this, conversation)}
+          onMouseOver = {this.MouseOverRequest.bind(this,conversation)}
+          onMouseOut = {this.MouseOutRequest.bind(this,conversation)}
+        >
+          <div style={{ height: 50, width: 2, backgroundColor: '#0F2972', margin: '5%', marginRight: '3%' }} />
+          <div>
+            <div className="conversation-info">
+              <div style={{ display: 'flex', flexDirection: 'row' }}>
+                <h1 className="conversation-title">{ conversation.name }</h1>
+                <span className="text-primary mr-2" style={{ position: 'absolute', right: '8%', fontSize: 12 }}>
+                  {conversation.threadId.split('_')[3]+'-'+conversation.threadId.split('_')[2]+'-'+conversation.threadId.split('_')[1]}
+                </span>
+              </div>
+              <p className="conversation-snippet">{ conversation.text }</p>
+            </div>
+          </div>
+        </div>
+      )
+    }
 
   render()
   {
@@ -184,27 +300,15 @@ export default class Messenger extends React.Component {
 
         <div className="scrollable sidebar" style={{height: window.innerHeight, width:'25%'}}>
         <div className="conversation-list">
+          <Button color="primary" type="button" onClick={() => this.newBooking()} style={{ margin: '5%', marginBottom: 0 }}>
+            New Booking
+          </Button>
           <ConversationSearch placeholder="Search Bookings"/>
-          {
-            this.state.conversations.map(conversation =>
-              <div id={conversation.name} className="conversation-list-item"
-                onClick={this.ClickRequest.bind(this, conversation)}
-                onMouseOver = {this.MouseOverRequest.bind(this,conversation)}
-                onMouseOut = {this.MouseOutRequest.bind(this,conversation)}>
-
-                <img className="conversation-photo" src={conversation.photo} alt="conversation" />
-                <div className="conversation-info">
-                  <h1 className="conversation-title">{ conversation.name }</h1>
-                  <p className="conversation-snippet">{ conversation.text }</p>
-                </div>
-
-              </div>
-            )
-          }
+          {this.state.loading?<LinearProgress />:''}
+          {this.loadLeftPane()}
         </div>
         </div>
           {this.loadStage()}
-
       </div>
     );
   }

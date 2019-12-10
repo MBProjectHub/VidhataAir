@@ -37,9 +37,37 @@ class Requestform extends React.Component {
       )
   }
 
+  getTimestamp(h,m) {
+    var t = new Date();
+    t.setHours(t.getUTCHours() + h);
+    t.setMinutes(t.getUTCMinutes() + m);
+
+    var timestamp =
+        t.getUTCFullYear() + "_" +
+        ("0" + (t.getMonth()+1)).slice(-2) + "_" +
+        ("0" + t.getDate()).slice(-2) + "_" +
+        ("0" + t.getHours()).slice(-2) + "_" +
+        ("0" + t.getMinutes()).slice(-2) + "_" +
+        ("0" + t.getSeconds()).slice(-2) + "_" +
+        ("0" + t.getMilliseconds()).slice(-2);
+
+    return timestamp;
+  }
+
   submit() {
-  fire.database().ref(
-    '/bookings/active/'+this.props.data.threadId+'/request/details').update(this.state);
+    fire.database().ref('/bookings/active/'+this.props.data.threadId).once('value', snapshot => {
+      let newData = snapshot.val();
+      newData.Estage = 0;
+      newData.request['details'] = this.state;
+      let timestamp = this.getTimestamp(5,30);
+      let temp = timestamp.split('_');
+      let formatted = temp[2]+'-'+temp[1]+'-'+temp[0]+' '+temp[3]+':'+temp[4];
+      newData.request.arrivedAt = formatted;
+      temp = {}
+      temp['booking_'+timestamp] = newData;
+      fire.database().ref('/bookings/active/'+this.props.data.threadId).set({});
+      fire.database().ref('bookings/active').update(temp);
+    });
   }
 
   getNameFields(num) {
