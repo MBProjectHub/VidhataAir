@@ -137,7 +137,7 @@ export default class Messenger extends React.Component {
       document.getElementById(conversation.threadId).style.background = "#fff"
       });
       document.getElementById(conversation.threadId).style.background = "#eeeef1"
-      this.setState({currentSelected:conversation.threadId, currentProgressStage:conversation.Ustage, currentConversation: conversation})
+      this.setState({currentSelected:conversation.threadId, currentProgressStage:conversation.stage, currentConversation: conversation})
   }
 
   MouseOverRequest(conversation)
