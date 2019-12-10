@@ -18,7 +18,7 @@ class ProfileCard extends React.Component {
     name: ''
   }
 
-  getName() {
+  componentDidUpdate() {
     if(this.props.data.handler != '-')
       fire.database().ref('/users/'+this.props.data.handler)
       .once('value', snapshot => this.setState({ name: snapshot.val().name }));
