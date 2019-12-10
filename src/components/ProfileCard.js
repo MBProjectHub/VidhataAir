@@ -23,7 +23,7 @@ class ProfileCard extends React.Component {
       fire.database().ref('/users/'+this.props.data.handler)
       .once('value', snapshot => this.setState({ name: snapshot.val().name }));
     else
-      this.setState({ name: '-' })
+      this.state.name = '-';
   }
 
   render() {
