@@ -31,7 +31,7 @@ class Requestform extends React.Component {
     fire.database().ref(
       '/bookings/active/'+this.props.data.threadId+'/request/details').on(
         'value', snapshot => {
-          if(snapshot.val() != '-')
+          if(snapshot.val() != '-' && snapshot.val())
             this.setState(snapshot.val());
         }
       )
@@ -55,7 +55,8 @@ class Requestform extends React.Component {
   }
 
   submit() {
-    fire.database().ref('/bookings/active/'+this.props.data.threadId).once('value', snapshot => {
+    this.props.load();
+    fire.database().ref('/bookings/active/'+this.props.data.threadId).once('value', async snapshot => {
       let newData = snapshot.val();
       newData.Estage = 0;
       newData.request['details'] = this.state;
@@ -65,8 +66,9 @@ class Requestform extends React.Component {
       newData.request.arrivedAt = formatted;
       temp = {}
       temp['booking_'+timestamp] = newData;
-      fire.database().ref('/bookings/active/'+this.props.data.threadId).set({});
-      fire.database().ref('bookings/active').update(temp);
+      await fire.database().ref('/bookings/active/'+this.props.data.threadId).set({});
+      await fire.database().ref('bookings/active').update(temp);
+      this.props.updateId('booking_'+timestamp);
     });
   }
 

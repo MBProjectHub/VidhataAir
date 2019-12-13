@@ -18,6 +18,7 @@ import fire from '../../config/firebaseConfig';
 export default class Messenger extends React.Component {
   state = {
     bookings: {},
+    approvals: {},
     conversations:[],
     currentProgressStage:"",
     currentSelected:"",
@@ -27,23 +28,32 @@ export default class Messenger extends React.Component {
     }
 
   componentDidMount() {
-    fire.database().ref('/bookings').on('value', snapshot => {
-      this.setState({ bookings: snapshot.val() }, () => this.loadConvos());
+    fire.database().ref('/bookings').on('value', b => {
+      fire.database().ref('/approvals').on('value', a => {
+        this.setState({ approvals: a.val() });
+      });
+      this.setState({ bookings: b.val() }, () => this.loadConvos());
     });
   }
 
   trans(stage) {
+    if(stage == 1.5)
+      return 'options';
     switch(stage)
     {
       case 0: return 'request';
       case 1: return 'options';
       case 2: return 'confirmation';
+      case 3: return 'confirmation';
       default: return '';
     }
   }
 
   async loadConvos() {
-    let threads = Object.keys(this.state.bookings.active)
+    let threads = Object.keys(this.state.bookings.active) // change to user's personal threadList here
+    let approves = [];
+    if(this.state.approvals)
+      approves = Object.keys(this.state.approvals) // change to user's personal approvalList here
     let tempConvos = [];
     let tempCur = {};
     for(var i=0; i < threads.length; i++)
@@ -56,10 +66,20 @@ export default class Messenger extends React.Component {
         let a = this.state.bookings.active[tid][this.trans(st)].arrivedAt;
         let dept = this.state.bookings.active[tid].request.details.dept;
         let arr = this.state.bookings.active[tid].request.details.arr;
+        if(approves.includes(tid)) {
+          uid = this.state.approvals[tid].uid;
+          st = this.state.approvals[tid].Ustage;
+          h = this.state.approvals[tid][this.trans(st)].handler;
+          ha = this.state.approvals[tid][this.trans(st)].handledAt;
+          a = this.state.approvals[tid][this.trans(st)].arrivedAt;
+          dept = 'Flight Approval';
+          arr = '';
+        }
         await fire.database().ref('/users/'+uid).once('value', snapshot => {
           tempConvos.unshift({
             threadId: tid,
             name: snapshot.val().name,
+            comp: snapshot.val().company,
             text: dept + ' > ' + arr,
             stage: st,
             handler: h,
@@ -67,7 +87,7 @@ export default class Messenger extends React.Component {
             arrivedAt: a
           })
         });
-        if(tid == this.state.currentConversation.threadId)
+        if(tid == this.state.currentSelected)
           tempCur = tempConvos[0];
     }
     if(Object.keys(tempCur).length != 0) {
@@ -129,6 +149,7 @@ export default class Messenger extends React.Component {
     }
     fire.database().ref('/bookings/active').update(newThread);
     this.setState({ newBooking: true, loading: true })
+    // add id to user's personal list
   }
 
   ClickRequest(conversation)
@@ -173,15 +194,22 @@ export default class Messenger extends React.Component {
   let steps = ['Initiate Request', 'Flight Options', 'Booking Confirmation', 'Booking Complete'];
 
   if(label == steps[0]) {
-    fire.database().ref('/bookings/active/'+this.state.currentConversation.threadId).update({ Ustage: 0 });
+    fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 0 });
     if(this.state.currentProgressStage != 0)
       this.setState({ loading: true });
-    }
-  else if(label == steps[1] && this.state.bookings.active[this.state.currentConversation.threadId].options.opts) {
-    fire.database().ref('/bookings/active/'+this.state.currentConversation.threadId).update({ Ustage: 1 });
+    } else if(label == steps[1] && this.state.bookings.active[this.state.currentSelected].options.opts) {
+    fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 1 });
     if(this.state.currentProgressStage != 1)
       this.setState({ loading: true });
-    }
+    } else if(label == steps[2] && this.state.bookings.active[this.state.currentSelected].confirmation.details) {
+      fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 1 });
+      if(this.state.currentProgressStage != 2)
+        this.setState({ loading: true });
+    } else if(label == steps[3]) {
+      fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 3 });
+      if(this.state.currentProgressStage != 3)
+        this.setState({ loading: true });
+      }
 }
 
   renderProgressBar()
@@ -213,7 +241,7 @@ export default class Messenger extends React.Component {
         <Stepper style={{height:100, padding:10, backgroundColor:'transparent'}} alternativeLabel activeStep={this.state.currentProgressStage}>
       {steps.map(label => (
         <Step  key={label}>
-        <StepLabel label= {{color:'#fff'}} style={{color:'#fff'}} onClick={() => this.stageClick(label)}>
+        <StepLabel label= {{color:'#fff'}} style={{color:'#fff', cursor:'pointer'}} onClick={() => this.stageClick(label)}>
           {label}
         </StepLabel>
         </Step>
@@ -228,15 +256,17 @@ export default class Messenger extends React.Component {
     if(conversation.stage == 0)
     {
       return <div style={{height:'70%',paddingTop:'3%',marginTop:'2%',marginBottom:'2%', paddingBottom:'3%', overflowY:'scroll', width:'100%'}}>
-      <RequestForm editable={true} data={this.state.currentConversation} />
+      <RequestForm editable={true} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={this.state.currentConversation} />
     </div>
     }
     else if(conversation.stage == 1)
-      return <Options data={this.state.currentConversation} />
+      return <Options approver={false} update={[0]} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
+    else if(conversation.stage == 1.5)
+      return <Options approver={true} update={[0]} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
     else
     {
       return <div style={{height:'70%',paddingTop:'3%',marginTop:'2%',marginBottom:'2%', paddingBottom:'3%', overflowY:'scroll', width:'100%'}}>
-        <ConfirmationForm editable={true}/>
+        <ConfirmationForm editable={false} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={this.state.currentConversation} />
     </div>
     }
   }
@@ -253,7 +283,7 @@ export default class Messenger extends React.Component {
           </Col>
           <Col>
           <div>
-          {this.renderProgressBar()}
+          {this.state.currentProgressStage == 1.5? '' : this.renderProgressBar()}
           </div>
           </Col>
         </Row>

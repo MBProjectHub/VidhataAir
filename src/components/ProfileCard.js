@@ -15,15 +15,17 @@ import {
 class ProfileCard extends React.Component {
 
   state = {
-    name: ''
+    name: '-'
   }
 
-  componentDidUpdate() {
-    if(this.props.data.handler != '-')
-      fire.database().ref('/users/'+this.props.data.handler)
+  getName(id) {
+    if(id != '-')
+    {
+      fire.database().ref('/users/'+id)
       .once('value', snapshot => this.setState({ name: snapshot.val().name }));
-    else
-      this.state.name = '-';
+      return this.state.name;
+    }
+    return id
   }
 
   render() {
@@ -36,7 +38,7 @@ class ProfileCard extends React.Component {
                 <div className="col">
                 <span style={{color:'#272727'}} className="h2 font-weight-bold mb-0">{this.props.data.name}</span>
                   <CardTitle className="text-uppercase text-muted mb-0">
-                  {this.props.data.text}
+                  {this.props.data.comp}
                   </CardTitle>
 
                 </div>
@@ -49,7 +51,7 @@ class ProfileCard extends React.Component {
               <span className="text-success mr-2">
                 {this.props.data.arrivedAt.substring(this.props.data.arrivedAt.length-5)}
               </span>
-              <span style={{color:'#272727'}} className="text-nowrap">Received / Sent</span>
+              <span style={{color:'#272727'}} className="text-nowrap">Delivered</span>
                 <br/>
                 <span className="text-primary mr-2">
                   {this.props.data.handledAt.substring(0,this.props.data.handledAt.length-5)}
@@ -57,7 +59,7 @@ class ProfileCard extends React.Component {
                 <span className="text-success mr-2">
                   {this.props.data.handledAt.substring(this.props.data.handledAt.length-5)}
                 </span>
-                <span style={{color:'#272727'}} className="text-nowrap">Read by {this.state.name}</span>
+                <span style={{color:'#272727'}} className="text-nowrap">Read by {this.getName(this.props.data.handler)}</span>
               </p>
             </CardBody>
           </Card>
