@@ -1,5 +1,9 @@
 import React from "react";
 import fire from '../config/firebaseConfig';
+
+import { StyledDropZone } from 'react-drop-zone';
+import 'react-drop-zone/dist/styles.css';
+
 // reactstrap components
 import {
   Button,
@@ -19,62 +23,54 @@ class ConfirmationForm extends React.Component {
   state = {
     dept: '',
     arr: '',
-    ddate: '',
-    rdate: '',
-    ttype: 0,
-    class: 0,
-    numTrav: 1,
-    travNames: []
+    date: '',
+    fare: 0,
+    pnr: '',
+    flight: ''
   }
 
   componentDidMount() {
     fire.database().ref(
-      '/bookings/active/'+this.props.data.threadId+'/request/details').on(
+      '/bookings/active/'+this.props.data.threadId+'/confirmation/details').on(
         'value', snapshot => {
-          if(snapshot.val() != '-')
+          if(snapshot.val() != '-' && snapshot.val())
             this.setState(snapshot.val());
         }
       )
   }
 
-  getNameFields(num) {
-    let fields = [];
+  getTimestamp(h,m) {
+    var t = new Date();
+    t.setHours(t.getUTCHours() + h);
+    t.setMinutes(t.getUTCMinutes() + m);
 
-    for(var i=0; i < num; i++)
-    {
-      fields.push(
-        <Input
-          className="form-control-alternative"
-          id={i}
-          placeholder="City"
-          type="text"
-          value={this.state.travNames[i]}
-          onChange={name => {
-            let temp = this.state.travNames;
-            temp[Number(name.target.getAttribute("id"))] = name.target.value;
-            this.setState({ travNames: temp });
-          }}
-          style={{pointerEvents:!this.props.editable?'none':'auto', marginTop: '2%'}}
-        />
-      );
-    }
+    var timestamp =
+        t.getUTCFullYear() + "_" +
+        ("0" + (t.getMonth()+1)).slice(-2) + "_" +
+        ("0" + t.getDate()).slice(-2) + "_" +
+        ("0" + t.getHours()).slice(-2) + "_" +
+        ("0" + t.getMinutes()).slice(-2) + "_" +
+        ("0" + t.getSeconds()).slice(-2) + "_" +
+        ("0" + t.getMilliseconds()).slice(-2);
 
-    if(num > 0)
-      return(
-        <Row>
-          <Col lg="6">
-            <FormGroup>
-              <label
-                className="form-control-label"
-                htmlFor="input-city"
-              >
-                Names of additional Travellers
-              </label>
-              {fields.map(field => field )}
-            </FormGroup>
-          </Col>
-        </Row>
-      );
+    return timestamp;
+  }
+
+  done() {
+    fire.database().ref('/bookings/active/'+this.props.data.threadId).once('value', async snapshot => {
+      let newData = snapshot.val();
+      newData.Ustage = 3;
+      newData.Estage = 3;
+      let timestamp = this.getTimestamp(5,30);
+      let temp = timestamp.split('_');
+      let formatted = temp[2]+'-'+temp[1]+'-'+temp[0]+' '+temp[3]+':'+temp[4];
+      newData.confirmation.arrivedAt = formatted;
+      temp = {}
+      temp['booking_'+timestamp] = newData;
+      await fire.database().ref('/bookings/active/'+this.props.data.threadId).set({});
+      await fire.database().ref('bookings/active').update(temp);
+      this.props.updateId('booking_'+timestamp);
+    });
   }
 
   render() {
@@ -84,14 +80,14 @@ class ConfirmationForm extends React.Component {
                 <CardHeader className="bg-white border-0">
                   <Row className="align-items-center">
                     <Col xs="8">
-                      <h3 className="mb-0">Bookings Form</h3>
+                      <h3 className="mb-0">Booking Confirmation</h3>
                     </Col>
                   </Row>
                 </CardHeader>
                 <CardBody>
                   <Form>
                     <h6 className="heading-small text-muted mb-4">
-                      Trip Details
+                      Booking Details
                     </h6>
                     <div className="pl-lg-4">
                       <Row>
@@ -111,6 +107,7 @@ class ConfirmationForm extends React.Component {
                               value={this.state.dept}
                               onChange={dept => this.setState({ dept: dept.target.value })}
                               style={{pointerEvents:!this.props.editable?'none':'auto'}}
+                              defaultValue={'Hey'}
                             />
                           </FormGroup>
                         </Col>
@@ -141,15 +138,15 @@ class ConfirmationForm extends React.Component {
                               className="form-control-label"
                               htmlFor="input-first-name"
                             >
-                              Departure Date
+                              Flight Date
                             </label>
                             <Input
                               className="form-control-alternative"
                               id="input-first-name"
                               placeholder="Leaving Date"
                               type="date"
-                              value={this.state.ddate}
-                              onChange={ddate => this.setState({ ddate: ddate.target.value })}
+                              value={this.state.date}
+                              onChange={date => this.setState({ date: date.target.value })}
                               style={{pointerEvents:!this.props.editable?'none':'auto'}}
                             />
                           </FormGroup>
@@ -160,98 +157,69 @@ class ConfirmationForm extends React.Component {
                               className="form-control-label"
                               htmlFor="input-last-name"
                             >
-                              Return Date
+                              Fare
                             </label>
                             <Input
                               className="form-control-alternative"
                               id="input-last-name"
-                              placeholder="Returning Date"
-                              type="date"
-                              value={this.state.rdate}
-                              onChange={rdate => this.setState({ rdate: rdate.target.value })}
+                              placeholder="Price"
+                              type="number"
+                              value={this.state.fare}
+                              onChange={fare => this.setState({ fare: fare.target.value })}
                               style={{pointerEvents:!this.props.editable?'none':'auto'}}
                             />
                           </FormGroup>
                         </Col>
                       </Row>
-                    </div>
-                    <hr className="my-4" />
-                    {/* Address */}
-                    <h6 className="heading-small text-muted mb-4">
-                      Flight Preferences
-                    </h6>
-                    <div className="pl-lg-4">
                       <Row>
                         <Col lg="6">
                           <FormGroup>
                             <label
                               className="form-control-label"
-                              htmlFor="input-city"
+                              htmlFor="input-first-name"
                             >
-                              Trip type
-                            </label>
-                            <div class="custom-control custom-radio mb-3">
-                              <input name="custom-radio-2" class="custom-control-input" id="customRadio5" type="radio" checked={this.state.ttype==1} onChange={() => this.setState({ ttype: 1 })} />
-                              <label class="custom-control-label" for="customRadio5">One Way</label>
-                            </div>
-                            <div class="custom-control custom-radio mb-3">
-                              <input name="custom-radio-2" class="custom-control-input" id="customRadio6" type="radio" checked={this.state.ttype==2} onChange={() => this.setState({ ttype: 2 })} />
-                              <label class="custom-control-label" for="customRadio6">Round Trip</label>
-                            </div>
-                          </FormGroup>
-                        </Col>
-                        <Col lg="6">
-                          <FormGroup>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-country"
-                            >
-                              Class
-                            </label>
-                            <div class="custom-control custom-radio mb-3">
-                              <input name="custom-radio-3" class="custom-control-input" id="customRadio7" type="radio" checked={this.state.class==1} onChange={() => this.setState({ class: 1 })} />
-                              <label class="custom-control-label" for="customRadio7">Business</label>
-                            </div>
-                            <div class="custom-control custom-radio mb-3">
-                              <input name="custom-radio-3" class="custom-control-input" id="customRadio8" type="radio" checked={this.state.class==2} onChange={() => this.setState({ class: 2 })} />
-                              <label class="custom-control-label" for="customRadio8">Economy</label>
-                            </div>
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                    </div>
-                    <hr className="my-4" />
-                    <h6 className="heading-small text-muted mb-4">
-                      Additional Options
-                    </h6>
-                    <div className="pl-lg-4">
-                      <Row>
-                        <Col lg="4">
-                          <FormGroup>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-city"
-                            >
-                              Number of Travellers
+                              PNR
                             </label>
                             <Input
                               className="form-control-alternative"
-                              id="input-city"
-                              placeholder="City"
-                              type="number"
-                              value={this.state.numTrav}
-                              onChange={num => this.setState({ numTrav: num.target.value })}
+                              id="input-first-name"
+                              placeholder="PNR Number"
+                              type="text"
+                              value={this.state.pnr}
+                              onChange={pnr => this.setState({ pnr: pnr.target.value })}
+                              style={{pointerEvents:!this.props.editable?'none':'auto'}}
+                            />
+                          </FormGroup>
+                        </Col>
+                        <Col lg="6">
+                          <FormGroup>
+                            <label
+                              className="form-control-label"
+                              htmlFor="input-last-name"
+                            >
+                              Flight Number
+                            </label>
+                            <Input
+                              className="form-control-alternative"
+                              id="input-last-name"
+                              placeholder="Flight Number"
+                              type="text"
+                              value={this.state.flight}
+                              onChange={flight => this.setState({ flight: flight.target.value })}
                               style={{pointerEvents:!this.props.editable?'none':'auto'}}
                             />
                           </FormGroup>
                         </Col>
                       </Row>
-                      {this.getNameFields(this.state.numTrav-1)}
                     </div>
                     <hr className="my-4" />
                   </Form>
                 </CardBody>
               </Card>
+              <Button color="success" type="button" onClick={() => this.done()} style={{ marginLeft: '20%', padding: '2%', width: '60%', marginTop: '3%' }}>
+                Download PDF & Complete Booking
+              </Button>
+              <br/><br/>
             </Col>
           );
         }

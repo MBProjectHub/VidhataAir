@@ -1,13 +1,6 @@
 import React from 'react';
-import Stepper from '@material-ui/core/Stepper';
-import Step from '@material-ui/core/Step';
-import StepLabel from '@material-ui/core/StepLabel';
-import {Row, Col, Container, Button} from 'reactstrap'
-
-import { StyledDropZone } from 'react-drop-zone'
-import 'react-drop-zone/dist/styles.css'
-
-import { Dropdown, Input } from 'semantic-ui-react'
+import { Step, Stepper, StepLabel, LinearProgress } from '@material-ui/core';
+import {Row, Col, Container, Button } from 'reactstrap'
 
 import { createMuiTheme } from '@material-ui/core/styles';
 import { ThemeProvider } from '@material-ui/styles';
@@ -19,82 +12,205 @@ import '../ConversationListItem.css';
 import ProfileCard from '../ProfileCard'
 import RequestForm from '../RequestForm'
 import ConfirmationForm from '../ConfirmationForm'
+import Options from '../Options'
 import fire from '../../config/firebaseConfig';
 
 export default class Messenger extends React.Component {
   state = {
     bookings: {},
+    approvals: {},
     conversations:[],
     currentProgressStage:"",
     currentSelected:"",
     currentConversation:{},
-    cardOptions:[]
-
+    newBooking: false,
+    loading: true
     }
 
   componentDidMount() {
-    fire.database().ref('/bookings').on('value', snapshot => {
-      this.setState({ bookings: snapshot.val() }, () => this.loadConvos());
+    fire.database().ref('/bookings').on('value', b => {
+      fire.database().ref('/approvals').on('value', a => {
+        this.setState({ approvals: a.val() });
+      });
+      this.setState({ bookings: b.val() }, () => this.loadConvos());
     });
   }
 
   trans(stage) {
+    if(stage == 1.5)
+      return 'options';
     switch(stage)
     {
       case 0: return 'request';
       case 1: return 'options';
-      case 2: return 'request';
+      case 2: return 'confirmation';
+      case 3: return 'confirmation';
       default: return '';
     }
   }
 
   async loadConvos() {
-    let threads = Object.keys(this.state.bookings.active)
+    let threads = Object.keys(this.state.bookings.active) // change to user's personal threadList here
+    let approves = [];
+    if(this.state.approvals)
+      approves = Object.keys(this.state.approvals) // change to user's personal approvalList here
     let tempConvos = [];
+    let tempCur = {};
     for(var i=0; i < threads.length; i++)
     {
         let tid = threads[i];
         let uid = this.state.bookings.active[tid].uid;
-        let st = this.state.bookings.active[tid].stage;
+        let st = this.state.bookings.active[tid].Ustage;
         let h = this.state.bookings.active[tid][this.trans(st)].handler;
         let ha = this.state.bookings.active[tid][this.trans(st)].handledAt;
         let a = this.state.bookings.active[tid][this.trans(st)].arrivedAt;
+        let dept = this.state.bookings.active[tid].request.details.dept;
+        let arr = this.state.bookings.active[tid].request.details.arr;
+        if(approves.includes(tid)) {
+          uid = this.state.approvals[tid].uid;
+          st = this.state.approvals[tid].Ustage;
+          h = this.state.approvals[tid][this.trans(st)].handler;
+          ha = this.state.approvals[tid][this.trans(st)].handledAt;
+          a = this.state.approvals[tid][this.trans(st)].arrivedAt;
+          dept = 'Flight Approval';
+          arr = '';
+        }
         await fire.database().ref('/users/'+uid).once('value', snapshot => {
-          tempConvos.push({
+          tempConvos.unshift({
             threadId: tid,
-            photo: "https://randomuser.me/api/portraits/men/54.jpg",
             name: snapshot.val().name,
-            text: snapshot.val().company,
+            comp: snapshot.val().company,
+            text: dept + ' > ' + arr,
             stage: st,
             handler: h,
             handledAt: ha,
             arrivedAt: a
           })
         });
+        if(tid == this.state.currentSelected)
+          tempCur = tempConvos[0];
     }
-    this.setState({ conversations: tempConvos });
+    if(Object.keys(tempCur).length != 0) {
+      this.setState({
+        conversations: tempConvos,
+        currentSelected: tempCur.threadId,
+        currentProgressStage: tempCur.stage,
+        currentConversation: tempCur,
+        loading: false
+      }, () => {
+        if(this.state.newBooking)
+          this.setState({
+            newBooking: false,
+            currentSelected: this.state.conversations[0].name,
+            currentProgressStage: this.state.conversations[0].stage,
+            currentConversation: this.state.conversations[0]
+          });
+      });
+    } else
+      this.setState({
+        conversations: tempConvos,
+        loading: false
+      }, () => {
+        if(this.state.newBooking)
+          this.setState({
+            newBooking: false,
+            currentSelected: this.state.conversations[0].name,
+            currentProgressStage: this.state.conversations[0].stage,
+            currentConversation: this.state.conversations[0]
+          });
+      });
+  }
+
+  newBooking() {
+    let newThread = {}
+    newThread['booking_' + this.getTimestamp(5,30)] = {
+      confirmation : {
+        arrivedAt : '-',
+        details : '-',
+        handledAt : '-',
+        handler : '-'
+      },
+      options : {
+        arrivedAt : '-',
+        choice : -1,
+        handledAt : '-',
+        handler : '-',
+        status : -1
+      },
+      request : {
+        arrivedAt : '-',
+        details : '-',
+        handledAt : '-',
+        handler : '-'
+      },
+      Estage: -1,
+      Ustage : 0,
+      uid : 'uid1' // fire.auth().currentUser.uid
+    }
+    fire.database().ref('/bookings/active').update(newThread);
+    this.setState({ newBooking: true, loading: true })
+    // add id to user's personal list
   }
 
   ClickRequest(conversation)
   {
     this.state.conversations.forEach(conversation => {
-      document.getElementById(conversation.name).style.background = "#fff"
+      document.getElementById(conversation.threadId).style.background = "#fff"
       });
-      document.getElementById(conversation.name).style.background = "#eeeef1"
-      this.setState({currentSelected:conversation.name, currentProgressStage:conversation.stage, currentConversation: conversation})
+      document.getElementById(conversation.threadId).style.background = "#eeeef1"
+      this.setState({currentSelected:conversation.threadId, currentProgressStage:conversation.stage, currentConversation: conversation})
   }
 
   MouseOverRequest(conversation)
   {
-    if(this.state.currentSelected!==conversation.name)
-      document.getElementById(conversation.name).style.background = "#eeeef1"
+    if(this.state.currentSelected!==conversation.threadId)
+      document.getElementById(conversation.threadId).style.background = "#eeeef1"
   }
 
   MouseOutRequest(conversation)
   {
-    if(this.state.currentSelected!==conversation.name)
-      document.getElementById(conversation.name).style.background = "#fff"
+    if(this.state.currentSelected!==conversation.threadId)
+      document.getElementById(conversation.threadId).style.background = "#fff"
   }
+
+  getTimestamp(h,m) {
+    var t = new Date();
+    t.setHours(t.getUTCHours() + h);
+    t.setMinutes(t.getUTCMinutes() + m);
+
+    var timestamp =
+        t.getUTCFullYear() + "_" +
+        ("0" + (t.getMonth()+1)).slice(-2) + "_" +
+        ("0" + t.getDate()).slice(-2) + "_" +
+        ("0" + t.getHours()).slice(-2) + "_" +
+        ("0" + t.getMinutes()).slice(-2) + "_" +
+        ("0" + t.getSeconds()).slice(-2) + "_" +
+        ("0" + t.getMilliseconds()).slice(-2);
+
+    return timestamp;
+  }
+
+  stageClick(label) {
+  let steps = ['Initiate Request', 'Flight Options', 'Booking Confirmation', 'Booking Complete'];
+
+  if(label == steps[0]) {
+    fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 0 });
+    if(this.state.currentProgressStage != 0)
+      this.setState({ loading: true });
+    } else if(label == steps[1] && this.state.bookings.active[this.state.currentSelected].options.opts) {
+    fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 1 });
+    if(this.state.currentProgressStage != 1)
+      this.setState({ loading: true });
+    } else if(label == steps[2] && this.state.bookings.active[this.state.currentSelected].confirmation.details) {
+      fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 1 });
+      if(this.state.currentProgressStage != 2)
+        this.setState({ loading: true });
+    } else if(label == steps[3]) {
+      fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 3 });
+      if(this.state.currentProgressStage != 3)
+        this.setState({ loading: true });
+      }
+}
 
   renderProgressBar()
   {
@@ -116,7 +232,7 @@ export default class Messenger extends React.Component {
       },
     });
 
-    let steps = ['Initiate Request', 'Flight Options', 'Booking Confirmation', 'Travel Complete'];
+    let steps = ['Initiate Request', 'Flight Options', 'Booking Confirmation', 'Booking Complete'];
     if(this.state.currentProgressStage==="")
     return
     else
@@ -125,7 +241,7 @@ export default class Messenger extends React.Component {
         <Stepper style={{height:100, padding:10, backgroundColor:'transparent'}} alternativeLabel activeStep={this.state.currentProgressStage}>
       {steps.map(label => (
         <Step  key={label}>
-        <StepLabel label= {{color:'#fff'}} style={{color:'#fff'}} onClick={()=>{console.log("hi")}}>
+        <StepLabel label= {{color:'#fff'}} style={{color:'#fff', cursor:'pointer'}} onClick={() => this.stageClick(label)}>
           {label}
         </StepLabel>
         </Step>
@@ -135,77 +251,22 @@ export default class Messenger extends React.Component {
     }
   }
 
-
-  renderBookingOptions()
-  {
-    return this.state.cardOptions.map(cards=>{
-      return cards
-    })
-  }
-
   loadContent(conversation)
   {
-    const countryOptions = [
-      { key: 'af', value: 'af', flag: 'af', text: 'Afghanistan' },
-      { key: 'ax', value: 'ax', flag: 'ax', text: 'Aland Islands' },
-      { key: 'al', value: 'al', flag: 'al', text: 'Albania' },
-      { key: 'dz', value: 'dz', flag: 'dz', text: 'Algeria' },
-      { key: 'as', value: 'as', flag: 'as', text: 'American Samoa' },
-    ]
-
     if(conversation.stage == 0)
     {
       return <div style={{height:'70%',paddingTop:'3%',marginTop:'2%',marginBottom:'2%', paddingBottom:'3%', overflowY:'scroll', width:'100%'}}>
-      <RequestForm editable={true} data={this.state.currentConversation} />
+      <RequestForm editable={true} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={this.state.currentConversation} />
     </div>
     }
     else if(conversation.stage == 1)
-    {
-      return <div style={{height:'75%', marginBottom:'2%',paddingLeft:'7%', paddingTop:'4%', paddingBottom:'4%', overflowY:'scroll', width:'100%',backgroundColor:'#f8f9fe'}}>
-
-      {this.renderBookingOptions()}
-
-      <a class="ui card" onClick={()=>{
-        let cardOptions = this.state.cardOptions
-        cardOptions.push(
-        <div><a class="ui card"style={{ background:'#fff', width:'50%', boxShadow:'0 5px 9px 0 #fafafa, 0 0 0 1px #fafafa', marginBottom:'3%'}}>
-        <div class="content">
-        <div class="header" style={{marginBottom:'5px'}}>Choose Flight</div>
-      <Dropdown
-    placeholder='Select Country'
-    fluid
-    search
-    selection
-    options={countryOptions}
-  />
-    <div style={{display:'flex', flexDirection:'row',alignItems:'center', marginTop:'3%'}}>
-    <Input style={{width:'31%', marginRight:'20%'}} label='To' placeholder='mysite.com' />
-    <Input style={{width:'31%'}} label='From' placeholder='mysite.com' />
-    </div>
-    </div>
-    <div class="extra content">
-      <div class="ui two buttons">
-        <button class="ui negative button">Delete</button>
-      </div>
-        </div>
-      </a></div>
-      )
-      this.setState({cardOptions:cardOptions})
-      }}  style={{border:'2px dashed rgb(94, 114, 228)', background:'#5e72e450', width:'50%', height:'25%', boxShadow:'0 5px 9px 0 #d4d4d5, 0 0 0 1px #d4d4d5'}}>
-      <div class="content" style={{display:'flex',alignItems:'center', justifyContent:'center',}}>
-        <img src={require('../../assets/img/icons/common/plus.png')} style={{width:50, height:50}}/>
-      </div>
-    </a>
-    </div>
-    }
+      return <Options approver={false} update={[0]} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
+    else if(conversation.stage == 1.5)
+      return <Options approver={true} update={[0]} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
     else
     {
       return <div style={{height:'70%',paddingTop:'3%',marginTop:'2%',marginBottom:'2%', paddingBottom:'3%', overflowY:'scroll', width:'100%'}}>
-        <ConfirmationForm editable={true}/>
-      <div style={{width:'80%',marginLeft:'8%', marginTop:"5%"}}>
-      <StyledDropZone onDrop={(file, text) => console.log(file, text)} />
-      </div>
-
+        <ConfirmationForm editable={false} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={this.state.currentConversation} />
     </div>
     }
   }
@@ -222,7 +283,7 @@ export default class Messenger extends React.Component {
           </Col>
           <Col>
           <div>
-          {this.renderProgressBar()}
+          {this.state.currentProgressStage == 1.5? '' : this.renderProgressBar()}
           </div>
           </Col>
         </Row>
@@ -230,15 +291,37 @@ export default class Messenger extends React.Component {
 
         {this.loadContent(this.state.currentConversation)}
 
-        <div  style={{position:'absolute' ,bottom :0 , width:'100%',height:'9%', backgroundColor:'#FAFAFA', boxShadow: '0 -10px 15px -10px rgba(0,0,0,0.22)'}}>
-        <Button color="primary" type="button" style={{position:'absolute',right:'5%', bottom:'10%'}}>
-          Handle Request
-        </Button>
+        <div  style={{position:'absolute', zIndex: 10, bottom :0 , width:'100%',height:'9%', backgroundColor:'#FAFAFA', boxShadow: '0 -10px 15px -10px rgba(0,0,0,0.22)'}}>
         </div>
     </div>
-
     }
   }
+
+  loadLeftPane() {
+      return this.state.conversations.map(conversation =>
+        <div
+          id={conversation.threadId}
+          className="conversation-list-item"
+          style={{ display: 'flex', flexDirection: 'row' }}
+          onClick={this.ClickRequest.bind(this, conversation)}
+          onMouseOver = {this.MouseOverRequest.bind(this,conversation)}
+          onMouseOut = {this.MouseOutRequest.bind(this,conversation)}
+        >
+          <div style={{ height: 50, width: 2, backgroundColor: '#0F2972', margin: '5%', marginRight: '3%' }} />
+          <div>
+            <div className="conversation-info">
+              <div style={{ display: 'flex', flexDirection: 'row' }}>
+                <h1 className="conversation-title">{ conversation.name }</h1>
+                <span className="text-primary mr-2" style={{ position: 'absolute', right: '8%', fontSize: 12 }}>
+                  {conversation.threadId.split('_')[3]+'-'+conversation.threadId.split('_')[2]+'-'+conversation.threadId.split('_')[1]}
+                </span>
+              </div>
+              <p className="conversation-snippet">{ conversation.text }</p>
+            </div>
+          </div>
+        </div>
+      )
+    }
 
   render()
   {
@@ -247,27 +330,15 @@ export default class Messenger extends React.Component {
 
         <div className="scrollable sidebar" style={{height: window.innerHeight, width:'25%'}}>
         <div className="conversation-list">
+          <Button color="primary" type="button" onClick={() => this.newBooking()} style={{ margin: '5%', marginBottom: 0 }}>
+            New Booking
+          </Button>
           <ConversationSearch placeholder="Search Bookings"/>
-          {
-            this.state.conversations.map(conversation =>
-              <div id={conversation.name} className="conversation-list-item"
-                onClick={this.ClickRequest.bind(this, conversation)}
-                onMouseOver = {this.MouseOverRequest.bind(this,conversation)}
-                onMouseOut = {this.MouseOutRequest.bind(this,conversation)}>
-
-                <img className="conversation-photo" src={conversation.photo} alt="conversation" />
-                <div className="conversation-info">
-                  <h1 className="conversation-title">{ conversation.name }</h1>
-                  <p className="conversation-snippet">{ conversation.text }</p>
-                </div>
-
-              </div>
-            )
-          }
+          {this.state.loading?<LinearProgress />:''}
+          {this.loadLeftPane()}
         </div>
         </div>
           {this.loadStage()}
-
       </div>
     );
   }
