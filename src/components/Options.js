@@ -12,6 +12,7 @@ class Options extends React.Component {
 
   state = {
     cardOptions:[],
+    approver: '',
     data : {
       opts: [],
       choice: -1,
@@ -20,47 +21,37 @@ class Options extends React.Component {
   }
 
   componentDidMount() {
-    fire.database().ref(
-      '/bookings/active/'+this.props.data.threadId+'/options').once(
-        'value', snapshot => {
-          if(snapshot.val() != '-' && snapshot.val())
-          {
-            var temp = snapshot.val();
-            if(!temp.opts)
-              temp['opts'] = [];
-            this.setState({ data: temp, cardOptions: [] }, () => {
-              for(var i=0; i < this.state.data.opts.length; i++)
-                this.addOption(this.state.cardOptions, i, false);
-            });
-          }
-        }
-      )
-  }
-
-  shouldComponentUpdate() {
-    if (this.props.update[0] < 2) {
-      this.props.update[0] += 1;
-      return true
+    let temp = this.props.data.bookings.active[this.props.data.threadId];
+    if(temp && temp.options != '-')
+    {
+        var data = temp.options;
+        if(!data.opts)
+          data['opts'] = [];
+        fire.database().ref('/users/'+this.props.data.bookings.active[this.props.data.threadId].uid).once('value', snapshot => {
+          this.setState({ data: data, approver: snapshot.val().approver, cardOptions: [] }, () => {
+            for(var i=0; i < this.state.data.opts.length; i++)
+              this.addOption(this.state.cardOptions, i, false);
+          });
+        });
     }
-    return false;
   }
 
-  componentDidUpdate() {
-    fire.database().ref(
-      '/bookings/active/'+this.props.data.threadId+'/options').once(
-        'value', snapshot => {
-          if(snapshot.val() != '-' && snapshot.val())
-          {
-            var temp = snapshot.val();
-            if(!temp.opts)
-              temp['opts'] = [];
-            this.setState({ data: temp, cardOptions: [] }, () => {
-              for(var i=0; i < this.state.data.opts.length; i++)
-                this.addOption(this.state.cardOptions, i, false);
+  componentDidUpdate(prevProps, prevState) {
+    if(prevProps != this.props) {
+      let temp = this.props.data.bookings.active[this.props.data.threadId];
+      if(temp && temp.options != '-')
+      {
+          var data = temp.options;
+          if(!data.opts)
+            data['opts'] = [];
+            fire.database().ref('/users/'+this.props.data.bookings.active[this.props.data.threadId].uid).once('value', snapshot => {
+              this.setState({ data: data, approver: snapshot.val().approver, cardOptions: [] }, () => {
+                for(var i=0; i < this.state.data.opts.length; i++)
+                  this.addOption(this.state.cardOptions, i, false);
+              });
             });
-          }
-        }
-      )
+      }
+    }
   }
 
   renderBookingOptions()
@@ -143,6 +134,7 @@ class Options extends React.Component {
         let newData = snapshot.val();
         newData.options.choice = ch;
         newData.options.status = stat;
+        newData.options.opts[ch].remarks = this.state.data.opts[ch].remarks;
         let timestamp = this.getTimestamp(5,30);
         let temp = timestamp.split('_');
         let formatted = temp[2]+'-'+temp[1]+'-'+temp[0]+' '+temp[3]+':'+temp[4];
@@ -160,9 +152,14 @@ class Options extends React.Component {
         await fire.database().ref('bookings/active').update(temp_b);
         await fire.database().ref('/approvals').update(temp_a);
 
+        await fire.database().ref('/users/'+this.state.approver+'/bookings/'+this.props.data.threadId).set({});
+        await fire.database().ref('/users/'+this.state.approver+'/approvals/'+this.props.data.threadId).set({});
+        temp['booking_'+timestamp] = '-';
+        await fire.database().ref('/users/'+this.state.approver+'/bookings').update(temp);
+        await fire.database().ref('/users/'+this.state.approver+'/approvals').update(temp);
+
         this.props.updateId('booking_'+timestamp);
       });
-      // add to approver's personal list and same to threadList
     }
     else {
       fire.database().ref(
@@ -171,7 +168,8 @@ class Options extends React.Component {
       fire.database().ref(
         '/bookings/active/'+this.props.data.threadId).update({ Estage: 1 });
       fire.database().ref('/approvals/'+this.props.data.threadId).set({});
-      // remove from approver's personal list and ThreadList
+      fire.database().ref('/users/'+this.state.approver+'/bookings/'+this.props.data.threadId).set({});
+      fire.database().ref('/users/'+this.state.approver+'/approvals/'+this.props.data.threadId).set({});
     }
   }
 
@@ -192,31 +190,32 @@ class Options extends React.Component {
             </button>}
           </div>
           <div style={{display:'flex', flexDirection:'row',alignItems:'center', marginTop:'3%'}}>
-            <Input id={i} style={{width:'50%', marginRight:'5%'}} label='From' placeholder='Departure City'
+            <Input readOnly id={i} style={{width:'50%', marginRight:'5%'}} label='From' placeholder='Departure City'
               onChange={e => { opts[e.target.getAttribute('id')]['dept'] = e.target.value; console.log(opts); this.forceUpdate(); }}
               defaultValue={this.state.data.opts[i].dept}
             />
-            <Input id={i} style={{width:'50%'}} label='To' placeholder='Arrival City'
+            <Input readOnly id={i} style={{width:'50%'}} label='To' placeholder='Arrival City'
               onChange={e => { opts[e.target.getAttribute('id')]['arr'] = e.target.value; this.forceUpdate(); }}
               defaultValue={this.state.data.opts[i].arr}
             />
           </div>
           <div style={{display:'flex', flexDirection:'row', alignItems:'center', marginTop:'3%'}}>
             <div style={{alignItems:'center', width: '50%', marginTop:'3%', marginRight: '5%'}}>
-              <Input id={i} style={{width:'100%', marginBottom: '3%'}} label='Date' placeholder='Date'
+              <Input readOnly id={i} style={{width:'100%', marginBottom: '3%'}} label='Date' placeholder='Date'
                 onChange={e => { opts[e.target.getAttribute('id')]['date'] = e.target.value; this.forceUpdate(); }}
                 defaultValue={this.state.data.opts[i].date}
               />
-              <Input id={i} style={{width:'100%', marginBottom: '3%'}} label='Time' placeholder='HH:MM'
+              <Input readOnly id={i} style={{width:'100%', marginBottom: '3%'}} label='Time' placeholder='HH:MM'
                 onChange={e => { opts[e.target.getAttribute('id')]['time'] = e.target.value; this.forceUpdate(); }}
                 defaultValue={this.state.data.opts[i].time}
               />
-              <Input id={i} style={{width:'100%', marginBottom: '3%'}} label='Fare' placeholder='Price'
+              <Input readOnly id={i} style={{width:'100%', marginBottom: '3%'}} label='Fare' placeholder='Price'
                 onChange={e => { opts[e.target.getAttribute('id')]['fare'] = e.target.value; this.forceUpdate(); }}
                 defaultValue={this.state.data.opts[i].fare}
               />
             </div>
             <div style={{alignSelf: 'flex-start', width: '50%', marginTop:'3%'}}>
+              <span style={{ fontSize: 12, fontWeight: 600 }}>Remarks</span>
               <textarea id={i} class="form-control" rows="3" placeholder="Remarks" style={{ marginTop: '3%', color:'black' }}
                 onChange={e => { opts[e.target.getAttribute('id')]['remarks'] = e.target.value; this.forceUpdate(); }}
                 defaultValue={this.state.data.opts[i].remarks}
@@ -234,7 +233,7 @@ class Options extends React.Component {
       this.setState({ cardOptions:cardOptions, data: temp });
     }
     else
-      this.setState({ cardOptions:cardOptions }, () => console.log(this.state.cardOptions));
+      this.setState({ cardOptions:cardOptions });
   }
 
   render() {

@@ -19,6 +19,8 @@ export default class Messenger extends React.Component {
   state = {
     bookings: {},
     approvals: {},
+    myBookings: {},
+    myApprovals: {},
     conversations:[],
     currentProgressStage:"",
     currentSelected:"",
@@ -28,11 +30,19 @@ export default class Messenger extends React.Component {
     }
 
   componentDidMount() {
-    fire.database().ref('/bookings').on('value', b => {
+    fire.database().ref('/bookings').on('value', async b => {
       fire.database().ref('/approvals').on('value', a => {
-        this.setState({ approvals: a.val() });
+        fire.database().ref('/bookings').on('value', async mb => {
+          fire.database().ref('/bookings').on('value', async ma => {
+            this.setState({
+              approvals: a.val(),
+              bookings: b.val(),
+              myApprovals: ma.val(),
+              myBookings: mb.val()
+            }, () => this.loadConvos());
+          });
+        });
       });
-      this.setState({ bookings: b.val() }, () => this.loadConvos());
     });
   }
 
@@ -50,10 +60,12 @@ export default class Messenger extends React.Component {
   }
 
   async loadConvos() {
-    let threads = Object.keys(this.state.bookings.active) // change to user's personal threadList here
+    let threads = [];
+    if(this.state.myBookings)
+      threads = Object.keys(this.state.myBookings)
     let approves = [];
-    if(this.state.approvals)
-      approves = Object.keys(this.state.approvals) // change to user's personal approvalList here
+    if(this.state.myApprovals)
+      approves = Object.keys(this.state.myApprovals)
     let tempConvos = [];
     let tempCur = {};
     for(var i=0; i < threads.length; i++)
@@ -79,7 +91,7 @@ export default class Messenger extends React.Component {
           tempConvos.unshift({
             threadId: tid,
             name: snapshot.val().name,
-            comp: snapshot.val().company,
+            department: snapshot.val().department,
             text: dept + ' > ' + arr,
             stage: st,
             handler: h,
@@ -122,8 +134,9 @@ export default class Messenger extends React.Component {
   }
 
   newBooking() {
+    let str = 'booking_' + this.getTimestamp(5,30);
     let newThread = {}
-    newThread['booking_' + this.getTimestamp(5,30)] = {
+    newThread[str] = {
       confirmation : {
         arrivedAt : '-',
         details : '-',
@@ -145,11 +158,13 @@ export default class Messenger extends React.Component {
       },
       Estage: -1,
       Ustage : 0,
-      uid : 'uid1' // fire.auth().currentUser.uid
+      uid : fire.auth().currentUser.uid
     }
     fire.database().ref('/bookings/active').update(newThread);
-    this.setState({ newBooking: true, loading: true })
-    // add id to user's personal list
+    let temp = {};
+    temp[str] = '-';
+    fire.database().ref('/users/'+fire.auth().currentUser.uid+'/bookings').update(temp);
+    this.setState({ newBooking: true, loading: true });
   }
 
   ClickRequest(conversation)
@@ -202,7 +217,7 @@ export default class Messenger extends React.Component {
     if(this.state.currentProgressStage != 1)
       this.setState({ loading: true });
     } else if(label == steps[2] && this.state.bookings.active[this.state.currentSelected].confirmation.details) {
-      fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 1 });
+      fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 2 });
       if(this.state.currentProgressStage != 2)
         this.setState({ loading: true });
     } else if(label == steps[3]) {
@@ -256,7 +271,7 @@ export default class Messenger extends React.Component {
     if(conversation.stage == 0)
     {
       return <div style={{height:'70%',paddingTop:'3%',marginTop:'2%',marginBottom:'2%', paddingBottom:'3%', overflowY:'scroll', width:'100%'}}>
-      <RequestForm editable={true} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={this.state.currentConversation} />
+      <RequestForm editable={true} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
     </div>
     }
     else if(conversation.stage == 1)
@@ -266,7 +281,7 @@ export default class Messenger extends React.Component {
     else
     {
       return <div style={{height:'70%',paddingTop:'3%',marginTop:'2%',marginBottom:'2%', paddingBottom:'3%', overflowY:'scroll', width:'100%'}}>
-        <ConfirmationForm editable={false} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={this.state.currentConversation} />
+        <ConfirmationForm editable={false} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id }) } data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
     </div>
     }
   }
