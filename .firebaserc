@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "vidhata-dashboard"
+  },
+  "targets": {
+    "vidhata-dashboard": {
+      "hosting": {
+        "air": [
+          "vidhata-air"
+        ]
+      }
+    }
+  }
+}
