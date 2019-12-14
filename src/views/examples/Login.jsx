@@ -38,6 +38,7 @@ import fire from 'firebase'
 class Login extends React.Component {
 
 
+
   firebaseLogin()
   {
     let email = document.getElementById('email').value;
@@ -47,6 +48,7 @@ class Login extends React.Component {
     {
       fire.auth().signInWithEmailAndPassword(email, password)
       .then(()=>{
+        this.props.history.push('/admin/bookings')
         console.log(fire.auth().currentUser.uid)
       })
     }
@@ -55,6 +57,8 @@ class Login extends React.Component {
       alert("Please enter all the details");
     }
   }
+
+  
 
 
   render() {

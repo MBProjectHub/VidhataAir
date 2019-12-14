@@ -9,7 +9,7 @@ import "assets/scss/argon-dashboard-react.scss";
 
 import AdminLayout from "layouts/Admin.jsx";
 import AuthLayout from "layouts/Auth.jsx";
-
+import App from './App'
 
 
 ReactDOM.render(
@@ -17,7 +17,7 @@ ReactDOM.render(
     <Switch>
       <Route path="/admin" render={props => <AdminLayout {...props} />} />
       <Route path="/auth" render={props => <AuthLayout {...props} />} />
-      <Redirect from="/" to="/admin/bookings" />
+      <Route path="/" render={props => <App {...props} />} />
     </Switch>
   </BrowserRouter>,
   document.getElementById("root")
