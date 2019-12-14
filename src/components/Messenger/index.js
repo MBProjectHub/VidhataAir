@@ -61,17 +61,18 @@ export default class Messenger extends React.Component {
 
   async loadConvos() {
     let threads = [];
-    if(this.state.myBookings)
+    if(this.state.bookings && this.state.bookings.active && this.state.myBookings)
       threads = Object.keys(this.state.myBookings)
     let approves = [];
-    if(this.state.myApprovals)
+    if(this.state.approvals && this.state.myApprovals)
       approves = Object.keys(this.state.myApprovals)
     let tempConvos = [];
     let tempCur = {};
     for(var i=0; i < threads.length; i++)
     {
         let tid = threads[i];
-        console.log(tid);
+        if(!this.state.bookings.active[tid])
+          break;
         let uid = this.state.bookings.active[tid].uid;
         let st = this.state.bookings.active[tid].Ustage;
         let h = this.state.bookings.active[tid][this.trans(st)].handler;
@@ -217,7 +218,7 @@ export default class Messenger extends React.Component {
     fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 1 });
     if(this.state.currentProgressStage != 1)
       this.setState({ loading: true });
-    } else if(label == steps[2] && this.state.bookings.active[this.state.currentSelected].confirmation.details) {
+    } else if(label == steps[2] && this.state.bookings.active[this.state.currentSelected].confirmation.details && this.state.bookings.active[this.state.currentSelected].options.status != 3) {
       fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 2 });
       if(this.state.currentProgressStage != 2)
         this.setState({ loading: true });
