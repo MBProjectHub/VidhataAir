@@ -30,25 +30,9 @@ class ConfirmationForm extends React.Component {
   }
 
   componentDidMount() {
-    fire.database().ref(
-      '/bookings/active/'+this.props.data.threadId+'/confirmation/details').on(
-        'value', snapshot => {
-          if(snapshot.val() != '-' && snapshot.val())
-            this.setState(snapshot.val());
-        }
-      )
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if(prevProps != this.props) {
-    fire.database().ref(
-      '/bookings/active/'+this.props.data.threadId+'/confirmation/details').on(
-        'value', snapshot => {
-          if(snapshot.val() != '-' && snapshot.val())
-            this.setState(snapshot.val());
-        }
-      )
-    }
+    var temp = this.props.data.bookings.active[this.props.data.threadId];
+    if(temp && temp.confirmation.details != '-')
+      this.setState(temp.confirmation.details);
   }
 
   getTimestamp(h,m) {

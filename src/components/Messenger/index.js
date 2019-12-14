@@ -49,7 +49,6 @@ export default class Messenger extends React.Component {
   }
 
   async loadConvos() {
-    console.log(this.state.approvals)
     let threads = Object.keys(this.state.bookings.active) // change to user's personal threadList here
     let approves = [];
     if(this.state.approvals)
@@ -266,7 +265,7 @@ export default class Messenger extends React.Component {
     else
     {
       return <div style={{height:'70%',paddingTop:'3%',marginTop:'2%',marginBottom:'2%', paddingBottom:'3%', overflowY:'scroll', width:'100%'}}>
-        <ConfirmationForm editable={false} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={this.state.currentConversation} />
+        <ConfirmationForm editable={false} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id }) } data={this.state.currentConversation} />
     </div>
     }
   }

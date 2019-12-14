@@ -28,13 +28,9 @@ class Requestform extends React.Component {
   }
 
   componentDidMount() {
-    fire.database().ref(
-      '/bookings/active/'+this.props.data.threadId+'/request/details').on(
-        'value', snapshot => {
-          if(snapshot.val() != '-' && snapshot.val())
-            this.setState(snapshot.val());
-        }
-      )
+    let temp = this.props.data.bookings.active[this.props.data.threadId];
+    if(temp && temp.request.details != '-')
+      this.setState(temp.request.details);
   }
 
   getTimestamp(h,m) {

@@ -21,40 +21,32 @@ class Options extends React.Component {
   }
 
   componentDidMount() {
-    fire.database().ref(
-      '/bookings/active/'+this.props.data.threadId+'/options').on(
-        'value', snapshot => {
-          if(snapshot.val() != '-' && snapshot.val())
-          {
-            var temp = snapshot.val();
-            if(!temp.opts)
-              temp['opts'] = [];
-            this.setState({ data: temp, cardOptions: [] }, () => {
-              for(var i=0; i < this.state.data.opts.length; i++)
-                this.addOption(this.state.cardOptions, i, false);
-            });
-          }
-        }
-      )
+    let temp = this.props.data.bookings.active[this.props.data.threadId];
+    if(temp && temp.options != '-')
+    {
+        var data = temp.options;
+        if(!data.opts)
+          data['opts'] = [];
+        this.setState({ data: data, cardOptions: [] }, () => {
+          for(var i=0; i < this.state.data.opts.length; i++)
+            this.addOption(this.state.cardOptions, i, false);
+        });
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
     if(prevProps != this.props) {
-    fire.database().ref(
-      '/bookings/active/'+this.props.data.threadId+'/options').once(
-        'value', snapshot => {
-          if(snapshot.val() != '-' && snapshot.val())
-          {
-            var temp = snapshot.val();
-            if(!temp.opts)
-              temp['opts'] = [];
-            this.setState({ data: temp, cardOptions: [] }, () => {
-              for(var i=0; i < this.state.data.opts.length; i++)
-                this.addOption(this.state.cardOptions, i, false);
-            });
-          }
-        }
-      )
+      let temp = this.props.data.bookings.active[this.props.data.threadId];
+      if(temp && temp.options != '-')
+      {
+          var data = temp.options;
+          if(!data.opts)
+            data['opts'] = [];
+          this.setState({ data: data, cardOptions: [] }, () => {
+            for(var i=0; i < this.state.data.opts.length; i++)
+              this.addOption(this.state.cardOptions, i, false);
+          });
+      }
     }
   }
 
