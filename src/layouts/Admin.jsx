@@ -26,11 +26,22 @@ import Sidebar from "components/Sidebar/Sidebar.jsx";
 
 import routes from "routes.js";
 
+import fire from '../config/firebaseConfig'
+
 class Admin extends React.Component {
+  state = {userName: ""}
+
+
   componentDidUpdate(e) {
     document.documentElement.scrollTop = 0;
     document.scrollingElement.scrollTop = 0;
     this.refs.mainContent.scrollTop = 0;
+  }
+  componentDidMount()
+  {
+    fire.database().ref(`users/${fire.auth().currentUser.uid}`).on('value',(user)=>{
+      this.setState({userName: user.val().name})
+    })
   }
   getRoutes = routes => {
     return routes.map((prop, key) => {
@@ -75,6 +86,7 @@ class Admin extends React.Component {
           <AdminNavbar
             {...this.props}
             brandText={this.getBrandText(this.props.location.pathname)}
+            userName = {this.state.userName}
           />
           <Switch>{this.getRoutes(routes)}</Switch>
           <Container fluid>

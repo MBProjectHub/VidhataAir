@@ -61,7 +61,9 @@ class Notifications extends React.Component {
         let notifications = {}
         let notifications_arr = []
         console.log('my time')
-        fire.database().ref(`users/${this.state.uid}/notifications/`).once('value', (notifs)=>{
+        fire.database().ref(`users/${this.state.uid}/notifications/`).on('value', (notifs)=>{
+          console.log(notifs.val())
+          notifications_arr = []
           //notifications = notifs.val()
           notifs.forEach(notification=>{
               notifications_arr.push({token:notification.key, subject: notification.val().subject, timestamp:notification.val().timestamp})
@@ -194,12 +196,41 @@ class Notifications extends React.Component {
     console.log(Date.now())
 
     let DateString = ""+year+month+date+hour+mins+secs
-
-    fire.database().ref(`notifications/${token}/conversation/convo_${DateString}/`).set({
-      customer:true,
-      message: text,
-      time: ""+ date + "-"+month+"-"+year+" "+hour+":"+mins
+    //let notifyToken = 'notify_'+DateString
+    /*  
+    fire.database().ref(`notifications/${token}`).on('value',(convos)=>{
+      fire.database().ref(`notifications/notify_${DateString}/`).set(convos.val(),()=>{
+        fire.database().ref(`notifications/notify_${DateString}/conversation/convo_${DateString}/`).set({
+          customer:true,
+          message: text,
+          time: ""+ date + "-"+month+"-"+year+" "+hour+":"+mins
+        },()=>{
+          fire.database().ref(`notifications/${token}`).remove().then(()=>{
+            fire.database().ref('notifications').on('value',(convos)=>{
+              let conversations = []
+              let prevDate = ""
+              Object.values(convos.val()[notifyToken]['conversation']).map((val)=>{
+                
+                if(val.time.slice(0,3)!=prevDate)
+                {
+                  prevDate = val.time.slice(0,3)
+                  conversations.push(val.time.slice(0,5))
+                }
+                conversations.push(val)
+              })
+              this.setState({currentModalConvos: conversations}) 
+            }) 
+          })
+        })
+      })
     })
+    */
+    
+   fire.database().ref(`notifications/${token}/conversation/convo_${DateString}/`).set({
+    customer:true,
+    message: text,
+    time: ""+ date + "-"+month+"-"+year+" "+hour+":"+mins
+  })
 
     document.getElementById("messageBox").value = ""
     
@@ -277,7 +308,7 @@ class Notifications extends React.Component {
 
   getReceived() {
     var items = [];
-
+    console.log(this.state.notifs)
     for(var i=this.state.notifs.length-1; i>=0; i--)
     {
       items.push(

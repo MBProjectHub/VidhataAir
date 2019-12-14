@@ -40,13 +40,30 @@ import fire from '../../config/firebaseConfig'
 
 class Register extends React.Component {
 
+  state = {users:null}
+
+  componentDidMount()
+  {
+    fire.database().ref('users').on('value',(users)=>{
+      let user_obj = {}
+
+      Object.entries(users.val()).map(([key,val])=>{
+        user_obj[val.email] = key
+      })
+
+      this.setState({users: user_obj})
+      console.log(user_obj)
+
+    })
+  }
+
   firebaseRegister()
   {
-    let passcode = document.getElementById('passcode').value;
     let name = document.getElementById('name').value;
     let email = document.getElementById('email').value;
     let password = document.getElementById('password').value;
 
+    let approver = document.getElementById('approver').value;
     let dob = document.getElementById('dob').value;
     let phone = document.getElementById('phone').value;
     let department = document.getElementById('department').value;
@@ -58,27 +75,37 @@ class Register extends React.Component {
     let doe = document.getElementById('doe').value;
     
   
-    if(name.length!==0 && email.length!==0 && password.length!==0 && dob.length!==0 && phone.length!==0 && department.length!==0 && passportno.length!==0 && doi.length!==0 && poi.length!==0 && doe.length !==0)
-    {
-      fire.auth().createUserWithEmailAndPassword(email, password)
-      .then(()=>{
-        fire.database().ref(`users/${fire.auth().currentUser.uid}`).set({
-          name: name,
-          email: email,
-          dob: dob,
-          phone: phone,
-          department: department,
-          seatPreference: seatpref,
-          meanPreference: mealpref,
-          passport_number: passportno,
-          date_of_issue: doi,
-          place_of_issue: poi,
-          date_of_expiry: doe
-        })
-      }, ()=>{
-        this.props.history.push('/admin/bookings')
-      })
-    }
+    if(name.length!==0 && email.length!==0 && password.length!==0 && dob.length!==0 && phone.length!==0 && department.length!==0 && passportno.length!==0 && doi.length!==0 && poi.length!==0 && doe.length !==0 && approver!==0)
+    { 
+      if(this.state.users!== null)
+      {
+        console.log('arrover', this.state.users[approver])
+        if(this.state.users[approver]!==undefined)
+        {
+          fire.auth().createUserWithEmailAndPassword(email, password)
+          .then(()=>{
+            fire.database().ref(`users/${fire.auth().currentUser.uid}`).set({
+              name: name,
+              email: email,
+              dob: dob,
+              phone: phone,
+              department: department,
+              seatPreference: seatpref,
+              mealPreference: mealpref,
+              passport_number: passportno,
+              date_of_issue: doi,
+              place_of_issue: poi,
+              date_of_expiry: doe,
+              approver: approver
+            })
+          }, ()=>{
+            this.props.history.push('/admin/bookings')
+          })
+        }
+        }
+
+      }
+      
     else
     {
       alert("Please enter all the details");
@@ -99,24 +126,43 @@ class Register extends React.Component {
                       <Row>
                         <Col lg="6">
                           <FormGroup>
-                            <label
+                             <label
                               className="form-control-label"
-                              htmlFor="input-username"
+                              htmlFor="input-first-name"
                             >
-                              Passcode
+                              Name
                             </label>
                             <Input
                               className="form-control-alternative"
-                              defaultValue=""
-                              id="passcode"
-                              placeholder="Passcode"
+                              defaultValue="John"
+                              id="name"
+                              placeholder="Name"
                               type="text"
                             />
                           </FormGroup>
                         </Col>
                         <Col lg="6">
                           <FormGroup>
-                            <label
+                             <label
+                              className="form-control-label"
+                              htmlFor="input-first-name"
+                            >
+                              Approver
+                            </label>
+                            <Input
+                              className="form-control-alternative"
+                              defaultValue="john@gmail.com"
+                              id="approver"
+                              placeholder="Approver Email Id"
+                              type="text"S
+                            />
+                          </FormGroup>
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col lg="6">
+                          <FormGroup>
+                          <label
                               className="form-control-label"
                               htmlFor="input-email"
                             >
@@ -127,25 +173,6 @@ class Register extends React.Component {
                               id="email"
                               placeholder="jesse@example.com"
                               type="email"
-                            />
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col lg="6">
-                          <FormGroup>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-first-name"
-                            >
-                              Name
-                            </label>
-                            <Input
-                              className="form-control-alternative"
-                              defaultValue="Lucky"
-                              id="name"
-                              placeholder="Name"
-                              type="text"
                             />
                           </FormGroup>
                         </Col>

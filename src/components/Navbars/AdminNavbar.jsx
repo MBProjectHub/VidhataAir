@@ -63,7 +63,7 @@ class AdminNavbar extends React.Component {
             {this.loadSearch()}
             <Nav className="align-items-center d-none d-md-flex" navbar>
                 <span className="mb-0 font-weight-bold" style={{color:'#fff', fontSize:'17px'}}>
-                  Jessica Jones
+                  {this.props.userName}
                 </span>
             </Nav>
           </Container>
