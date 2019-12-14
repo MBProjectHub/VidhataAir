@@ -1,20 +1,3 @@
-/*
-
-=========================================================
-* Argon Dashboard React - v1.0.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/argon-dashboard-react
-* Copyright 2019 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/argon-dashboard-react/blob/master/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
 import React from "react";
 import _ from 'lodash'
 // reactstrap components
@@ -66,7 +49,7 @@ class Notifications extends React.Component {
         console.log('sd')
         this.setState({uid: fire.auth().currentUser.uid},()=>{
           
-    this.retrieveFirebaseData()
+          this.retrieveFirebaseData()
         })
       }
     })
@@ -75,7 +58,6 @@ class Notifications extends React.Component {
 
   retrieveFirebaseData()
   {
-   
         let notifications = {}
         let notifications_arr = []
         console.log('my time')
@@ -86,10 +68,6 @@ class Notifications extends React.Component {
           })
           this.setState({notifs: notifications_arr})
         })
-      
-  
-    
-  
   }
   
   leftPad(number, targetLength) {
@@ -134,19 +112,19 @@ class Notifications extends React.Component {
           {
           conversation: conversation,
           subject: subject,
-          uid: fire.auth().currentUser.uid,
+          sentByuid: fire.auth().currentUser.uid,
           timestamp: ""+date+"/"+month+"/"+year+" "+hour+":"+mins,
-          name: name.val()
+          sentByname: name.val()
         },()=>{
           fire.database().ref(`users/${fire.auth().currentUser.uid}/notifications/notify_${DateString}/`).set(
             {
             conversation: conversation,
             subject: subject,
+            sentByuid:fire.auth().currentUser.uid,
             timestamp: ""+date+"/"+month+"/"+year+" "+hour+":"+mins,
-            name: name.val()
+            sentByname: name.val()
           }, ()=>{
-            
-    this.retrieveFirebaseData()
+            this.retrieveFirebaseData()
           })
         }
         )
