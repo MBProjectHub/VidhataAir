@@ -24,7 +24,8 @@ class Requestform extends React.Component {
     ttype: 0,
     class: 0,
     numTrav: 1,
-    travNames: []
+    travNames: [],
+    travNums: []
   }
 
   componentDidMount() {
@@ -52,18 +53,24 @@ class Requestform extends React.Component {
 
   submit() {
     this.props.load();
-    fire.database().ref('/bookings/active/'+this.props.data.threadId).once('value', async snapshot => {
-      let newData = snapshot.val();
+    fire.database().ref('/users').once('value', async snapshot => {
+      let newData = this.props.data.bookings.active[this.props.data.threadId];
       newData.Estage = 0;
       newData.request['details'] = this.state;
       let timestamp = this.getTimestamp(5,30);
       let temp = timestamp.split('_');
       let formatted = temp[2]+'-'+temp[1]+'-'+temp[0]+' '+temp[3]+':'+temp[4];
       newData.request.arrivedAt = formatted;
-      temp = {}
-      temp['booking_'+timestamp] = newData;
-      await fire.database().ref('/bookings/active/'+this.props.data.threadId).set({});
-      await fire.database().ref('bookings/active').update(temp);
+      
+      temp = {bookings: this.props.data.bookings, users: snapshot.val()}
+
+      temp.users[fire.auth().currentUser.uid].bookings[this.props.data.threadId] = {}
+      temp.users[fire.auth().currentUser.uid].bookings['booking_'+timestamp] = '-';
+
+      temp.bookings.active[this.props.data.threadId] = {};
+      temp.bookings.active['booking_'+timestamp] = newData;
+
+      await fire.database().ref('/').update(temp);
       this.props.updateId('booking_'+timestamp);
     });
   }
@@ -74,19 +81,54 @@ class Requestform extends React.Component {
     for(var i=0; i < num; i++)
     {
       fields.push(
-        <Input
-          className="form-control-alternative"
-          id={i}
-          placeholder="Traveller Name"
-          type="text"
-          value={this.state.travNames[i]}
-          onChange={name => {
-            let temp = this.state.travNames;
-            temp[Number(name.target.getAttribute("id"))] = name.target.value;
-            this.setState({ travNames: temp });
-          }}
-          style={{pointerEvents:!this.props.editable?'none':'auto', marginTop: '2%'}}
-        />
+        <Row>
+          <Col lg="6">
+            <FormGroup>
+              <label
+                className="form-control-label"
+                htmlFor="input-username"
+              >
+                Name
+              </label>
+              <Input
+                className="form-control-alternative"
+                id={i}
+                placeholder="Traveller Name"
+                type="text"
+                value={this.state.travNames[i]}
+                onChange={name => {
+                  let temp = this.state.travNames;
+                  temp[Number(name.target.getAttribute("id"))] = name.target.value;
+                  this.setState({ travNames: temp });
+                }}
+                style={{pointerEvents:!this.props.editable?'none':'auto', marginTop: '2%'}}
+              />
+              </FormGroup>
+            </Col>
+            <Col lg="6">
+              <FormGroup>
+              <label
+                className="form-control-label"
+                htmlFor="input-username"
+              >
+                Number
+              </label>
+              <Input
+                className="form-control-alternative"
+                id={i}
+                placeholder="Traveller Number"
+                type="number"
+                value={this.state.travNums[i]}
+                onChange={name => {
+                  let temp = this.state.travNums;
+                  temp[Number(name.target.getAttribute("id"))] = name.target.value;
+                  this.setState({ travNums: temp });
+                }}
+                style={{pointerEvents:!this.props.editable?'none':'auto', marginTop: '2%'}}
+              />
+              </FormGroup>
+            </Col>
+        </Row>
       );
     }
 
@@ -99,7 +141,7 @@ class Requestform extends React.Component {
                 className="form-control-label"
                 htmlFor="input-city"
               >
-                Names of additional Travellers
+                Additional Traveller Details
               </label>
               {fields.map(field => field )}
             </FormGroup>
@@ -121,6 +163,51 @@ class Requestform extends React.Component {
                 </CardHeader>
                 <CardBody>
                   <Form>
+                    {/* Address */}
+                    <h6 className="heading-small text-muted mb-4">
+                      Flight Preferences
+                    </h6>
+                    <div className="pl-lg-4">
+                      <Row>
+                        <Col lg="6">
+                          <FormGroup>
+                            <label
+                              className="form-control-label"
+                              htmlFor="input-city"
+                            >
+                              Trip type
+                            </label>
+                            <div class="custom-control custom-radio mb-3">
+                              <input name="custom-radio-2" class="custom-control-input" id="customRadio5" type="radio" checked={this.state.ttype==1} onChange={() => this.setState({ ttype: 1 })} />
+                              <label class="custom-control-label" for="customRadio5">One Way</label>
+                            </div>
+                            <div class="custom-control custom-radio mb-3">
+                              <input name="custom-radio-2" class="custom-control-input" id="customRadio6" type="radio" checked={this.state.ttype==2} onChange={() => this.setState({ ttype: 2 })} />
+                              <label class="custom-control-label" for="customRadio6">Round Trip</label>
+                            </div>
+                          </FormGroup>
+                        </Col>
+                        <Col lg="6">
+                          <FormGroup>
+                            <label
+                              className="form-control-label"
+                              htmlFor="input-country"
+                            >
+                              Class
+                            </label>
+                            <div class="custom-control custom-radio mb-3">
+                              <input name="custom-radio-3" class="custom-control-input" id="customRadio7" type="radio" checked={this.state.class==1} onChange={() => this.setState({ class: 1 })} />
+                              <label class="custom-control-label" for="customRadio7">Business</label>
+                            </div>
+                            <div class="custom-control custom-radio mb-3">
+                              <input name="custom-radio-3" class="custom-control-input" id="customRadio8" type="radio" checked={this.state.class==2} onChange={() => this.setState({ class: 2 })} />
+                              <label class="custom-control-label" for="customRadio8">Economy</label>
+                            </div>
+                          </FormGroup>
+                        </Col>
+                      </Row>
+                    </div>
+                    <hr className="my-4" />
                     <h6 className="heading-small text-muted mb-4">
                       Trip Details
                     </h6>
@@ -207,51 +294,6 @@ class Requestform extends React.Component {
                       </Row>
                     </div>
                     <hr className="my-4" />
-                    {/* Address */}
-                    <h6 className="heading-small text-muted mb-4">
-                      Flight Preferences
-                    </h6>
-                    <div className="pl-lg-4">
-                      <Row>
-                        <Col lg="6">
-                          <FormGroup>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-city"
-                            >
-                              Trip type
-                            </label>
-                            <div class="custom-control custom-radio mb-3">
-                              <input name="custom-radio-2" class="custom-control-input" id="customRadio5" type="radio" checked={this.state.ttype==1} onChange={() => this.setState({ ttype: 1 })} />
-                              <label class="custom-control-label" for="customRadio5">One Way</label>
-                            </div>
-                            <div class="custom-control custom-radio mb-3">
-                              <input name="custom-radio-2" class="custom-control-input" id="customRadio6" type="radio" checked={this.state.ttype==2} onChange={() => this.setState({ ttype: 2 })} />
-                              <label class="custom-control-label" for="customRadio6">Round Trip</label>
-                            </div>
-                          </FormGroup>
-                        </Col>
-                        <Col lg="6">
-                          <FormGroup>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-country"
-                            >
-                              Class
-                            </label>
-                            <div class="custom-control custom-radio mb-3">
-                              <input name="custom-radio-3" class="custom-control-input" id="customRadio7" type="radio" checked={this.state.class==1} onChange={() => this.setState({ class: 1 })} />
-                              <label class="custom-control-label" for="customRadio7">Business</label>
-                            </div>
-                            <div class="custom-control custom-radio mb-3">
-                              <input name="custom-radio-3" class="custom-control-input" id="customRadio8" type="radio" checked={this.state.class==2} onChange={() => this.setState({ class: 2 })} />
-                              <label class="custom-control-label" for="customRadio8">Economy</label>
-                            </div>
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                    </div>
-                    <hr className="my-4" />
                     <h6 className="heading-small text-muted mb-4">
                       Additional Options
                     </h6>
@@ -277,6 +319,8 @@ class Requestform extends React.Component {
                           </FormGroup>
                         </Col>
                       </Row>
+                    </div>
+                    <div className="pl-lg-4">
                       {this.getNameFields(this.state.numTrav-1)}
                     </div>
                     <hr className="my-4" />

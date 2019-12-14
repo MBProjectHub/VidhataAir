@@ -130,35 +130,35 @@ class Options extends React.Component {
   selHandler(ch, stat) {
     if(this.props.approver || this.state.data.choice != ch) {
       this.props.load();
-      fire.database().ref('/bookings/active/'+this.props.data.threadId).once('value', async snapshot => {
-        let newData = snapshot.val();
-        newData.options.choice = ch;
-        newData.options.status = stat;
-        newData.options.opts[ch].remarks = this.state.data.opts[ch].remarks;
-        let timestamp = this.getTimestamp(5,30);
-        let temp = timestamp.split('_');
-        let formatted = temp[2]+'-'+temp[1]+'-'+temp[0]+' '+temp[3]+':'+temp[4];
-        newData.options.arrivedAt = formatted;
+      fire.database().ref('/users').once('value', async snapshotU => {
+        fire.database().ref('/approvals').once('value', async snapshotA => {
+          let newData = this.props.data.bookings.active[this.props.data.threadId];
+          newData.options.choice = ch;
+          newData.options.status = stat;
+          newData.options.opts[ch].remarks = this.state.data.opts[ch].remarks;
+          let timestamp = this.getTimestamp(5,30);
+          let temp = timestamp.split('_');
+          let formatted = temp[2]+'-'+temp[1]+'-'+temp[0]+' '+temp[3]+':'+temp[4];
+          newData.options.arrivedAt = formatted;
 
-        let temp_b = {}
-        let temp_a = {}
+          temp = {bookings: this.props.data.bookings, users: snapshotU.val(), approvals: snapshotA.val()}
 
-        temp_b['booking_'+timestamp] = newData;
-        temp_a['booking_'+timestamp] = { Ustage: 1.5, uid: this.props.data.bookings.active[this.props.data.threadId].uid, options: newData.options };
+          temp.users[fire.auth().currentUser.uid].bookings[this.props.data.threadId] = {}
+          temp.users[fire.auth().currentUser.uid].bookings['booking_'+timestamp] = '-';
+          temp.users[this.state.approver].bookings[this.props.data.threadId] = {}
+          temp.users[this.state.approver].bookings['booking_'+timestamp] = '-';
+          temp.users[this.state.approver].approvals[this.props.data.threadId] = {}
+          temp.users[this.state.approver].approvals['booking_'+timestamp] = '-';
 
-        await fire.database().ref('/bookings/active/'+this.props.data.threadId).set({});
-        await fire.database().ref('/approvals/'+this.props.data.threadId).set({});
+          temp.bookings.active[this.props.data.threadId] = {};
+          temp.bookings.active['booking_'+timestamp] = newData;
 
-        await fire.database().ref('bookings/active').update(temp_b);
-        await fire.database().ref('/approvals').update(temp_a);
+          temp.approvals[this.props.data.threadId] = {};
+          temp.approvals['booking_'+timestamp] = { Ustage: 1.5, uid: this.props.data.bookings.active[this.props.data.threadId].uid, options: newData.options };
 
-        await fire.database().ref('/users/'+this.state.approver+'/bookings/'+this.props.data.threadId).set({});
-        await fire.database().ref('/users/'+this.state.approver+'/approvals/'+this.props.data.threadId).set({});
-        temp['booking_'+timestamp] = '-';
-        await fire.database().ref('/users/'+this.state.approver+'/bookings').update(temp);
-        await fire.database().ref('/users/'+this.state.approver+'/approvals').update(temp);
-
-        this.props.updateId('booking_'+timestamp);
+          await fire.database().ref('/').update(temp);
+          this.props.updateId('booking_'+timestamp);
+        });
       });
     }
     else {
