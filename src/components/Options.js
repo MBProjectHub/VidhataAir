@@ -148,11 +148,13 @@ class Options extends React.Component {
       let userVal1 = '-';
       let userVal2 = '-';
       let userVal3 = { Ustage: 1.5, uid: this.props.data.bookings.active[this.props.data.threadId].uid, options: newData.options };
+      let userVal4 = 'booking_'+timestamp;
       if(this.props.approver) {
         user = fire.auth().currentUser.uid;
         userVal1 = {};
         userVal2 = {};
         userVal3 = {};
+        userVal4 = '';
       }
 
       temp = {};
@@ -170,7 +172,7 @@ class Options extends React.Component {
       temp['/approvals/'+'booking_'+timestamp] = userVal3;
 
       fire.database().ref().update(temp);
-      this.props.updateId('booking_'+timestamp);
+      this.props.updateId(userVal4);
     }
     else {
       let temp ={}
