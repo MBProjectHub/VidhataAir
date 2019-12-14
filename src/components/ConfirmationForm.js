@@ -39,6 +39,18 @@ class ConfirmationForm extends React.Component {
       )
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if(prevProps != this.props) {
+    fire.database().ref(
+      '/bookings/active/'+this.props.data.threadId+'/confirmation/details').on(
+        'value', snapshot => {
+          if(snapshot.val() != '-' && snapshot.val())
+            this.setState(snapshot.val());
+        }
+      )
+    }
+  }
+
   getTimestamp(h,m) {
     var t = new Date();
     t.setHours(t.getUTCHours() + h);

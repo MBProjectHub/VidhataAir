@@ -28,11 +28,10 @@ export default class Messenger extends React.Component {
     }
 
   componentDidMount() {
-    fire.database().ref('/bookings').on('value', b => {
+    fire.database().ref('/bookings').on('value', async b => {
       fire.database().ref('/approvals').on('value', a => {
-        this.setState({ approvals: a.val() });
+        this.setState({ approvals: a.val(), bookings: b.val() }, () => this.loadConvos());
       });
-      this.setState({ bookings: b.val() }, () => this.loadConvos());
     });
   }
 
@@ -50,6 +49,7 @@ export default class Messenger extends React.Component {
   }
 
   async loadConvos() {
+    console.log(this.state.approvals)
     let threads = Object.keys(this.state.bookings.active) // change to user's personal threadList here
     let approves = [];
     if(this.state.approvals)
@@ -202,7 +202,7 @@ export default class Messenger extends React.Component {
     if(this.state.currentProgressStage != 1)
       this.setState({ loading: true });
     } else if(label == steps[2] && this.state.bookings.active[this.state.currentSelected].confirmation.details) {
-      fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 1 });
+      fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 2 });
       if(this.state.currentProgressStage != 2)
         this.setState({ loading: true });
     } else if(label == steps[3]) {
