@@ -12,7 +12,7 @@ class Options extends React.Component {
 
   state = {
     cardOptions:[],
-    //helper: this.helper.bind(this),
+    approver: '',
     data : {
       opts: [],
       choice: -1,
@@ -27,9 +27,11 @@ class Options extends React.Component {
         var data = temp.options;
         if(!data.opts)
           data['opts'] = [];
-        this.setState({ data: data, cardOptions: [] }, () => {
-          for(var i=0; i < this.state.data.opts.length; i++)
-            this.addOption(this.state.cardOptions, i, false);
+        fire.database().ref('/users/'+this.props.data.bookings.active[this.props.data.threadId].uid).once('value', snapshot => {
+          this.setState({ data: data, approver: snapshot.val().approver, cardOptions: [] }, () => {
+            for(var i=0; i < this.state.data.opts.length; i++)
+              this.addOption(this.state.cardOptions, i, false);
+          });
         });
     }
   }
@@ -42,10 +44,12 @@ class Options extends React.Component {
           var data = temp.options;
           if(!data.opts)
             data['opts'] = [];
-          this.setState({ data: data, cardOptions: [] }, () => {
-            for(var i=0; i < this.state.data.opts.length; i++)
-              this.addOption(this.state.cardOptions, i, false);
-          });
+            fire.database().ref('/users/'+this.props.data.bookings.active[this.props.data.threadId].uid).once('value', snapshot => {
+              this.setState({ data: data, approver: snapshot.val().approver, cardOptions: [] }, () => {
+                for(var i=0; i < this.state.data.opts.length; i++)
+                  this.addOption(this.state.cardOptions, i, false);
+              });
+            });
       }
     }
   }
@@ -148,9 +152,14 @@ class Options extends React.Component {
         await fire.database().ref('bookings/active').update(temp_b);
         await fire.database().ref('/approvals').update(temp_a);
 
+        await fire.database().ref('/users/'+this.state.approver+'/bookings/'+this.props.data.threadId).set({});
+        await fire.database().ref('/users/'+this.state.approver+'/approvals/'+this.props.data.threadId).set({});
+        temp['booking_'+timestamp] = '-';
+        await fire.database().ref('/users/'+this.state.approver+'/bookings').update(temp);
+        await fire.database().ref('/users/'+this.state.approver+'/approvals').update(temp);
+
         this.props.updateId('booking_'+timestamp);
       });
-      // add to approver's personal list and same to threadList
     }
     else {
       fire.database().ref(
@@ -159,7 +168,8 @@ class Options extends React.Component {
       fire.database().ref(
         '/bookings/active/'+this.props.data.threadId).update({ Estage: 1 });
       fire.database().ref('/approvals/'+this.props.data.threadId).set({});
-      // remove from approver's personal list and ThreadList
+      fire.database().ref('/users/'+this.state.approver+'/bookings/'+this.props.data.threadId).set({});
+      fire.database().ref('/users/'+this.state.approver+'/approvals/'+this.props.data.threadId).set({});
     }
   }
 
