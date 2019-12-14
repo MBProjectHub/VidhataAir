@@ -68,10 +68,10 @@ class Options extends React.Component {
     if(this.props.approver) {
       return (
         <div style={{ display: 'flex', flexDirection: 'row', marginTop: '3%', justifyContent: 'center' }}>
-          <Button color={this.state.data.status == 2?"success":"secondary"} type="button" onClick={() => this.selHandler(this.state.data.choice, 2)} style={{ padding: '3%', width: '40%', borderRadius: 50 }}>
+          <Button color="success" type="button" onClick={() => this.selHandler(this.state.data.choice, 2)} style={{ padding: '3%', width: '40%', borderRadius: 50 }}>
             <i className="fa fa-thumbs-up" />{'\t'}Approve
           </Button>
-          <Button color={this.state.data.status == 3?"danger":"secondary"} type="button" onClick={() => this.selHandler(this.state.data.choice, 3)} style={{ marginLeft: '5%', width: '40%', padding: '3%', borderRadius: 50 }}>
+          <Button color="danger" type="button" onClick={() => this.selHandler(this.state.data.choice, 3)} style={{ marginLeft: '5%', width: '40%', padding: '3%', borderRadius: 50 }}>
             <i className="fa fa-thumbs-down" />{'\t'}Reject
           </Button>
         </div>
@@ -145,22 +145,29 @@ class Options extends React.Component {
       newData.options.arrivedAt = formatted;
 
       let user = this.state.approver;
-      if(this.props.approver)
+      let userVal1 = '-';
+      let userVal2 = '-';
+      let userVal3 = { Ustage: 1.5, uid: this.props.data.bookings.active[this.props.data.threadId].uid, options: newData.options };
+      if(this.props.approver) {
         user = fire.auth().currentUser.uid;
+        userVal1 = {};
+        userVal2 = {};
+        userVal3 = {};
+      }
 
       temp = {};
       temp['/users/'+newData.uid+'/bookings/'+this.props.data.threadId] = {};
       temp['/users/'+newData.uid+'/bookings/'+'booking_'+timestamp] = '-';
       temp['/users/'+user+'/bookings/'+this.props.data.threadId] = {};
-      temp['/users/'+user+'/bookings/'+'booking_'+timestamp] = '-';
+      temp['/users/'+user+'/bookings/'+'booking_'+timestamp] = userVal1;
       temp['/users/'+user+'/approvals/'+this.props.data.threadId] = {};
-      temp['/users/'+user+'/approvals/'+'booking_'+timestamp] = '-';
+      temp['/users/'+user+'/approvals/'+'booking_'+timestamp] = userVal2;
 
       temp['/bookings/active/'+this.props.data.threadId] = {};
       temp['/bookings/active/'+'booking_'+timestamp] = newData;
 
       temp['/approvals/'+this.props.data.threadId] = {};
-      temp['/approvals/'+'booking_'+timestamp] = { Ustage: 1.5, uid: this.props.data.bookings.active[this.props.data.threadId].uid, options: newData.options };
+      temp['/approvals/'+'booking_'+timestamp] = userVal3;
 
       fire.database().ref().update(temp);
       this.props.updateId('booking_'+timestamp);
