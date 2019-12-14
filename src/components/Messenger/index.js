@@ -32,8 +32,8 @@ export default class Messenger extends React.Component {
   componentDidMount() {
     fire.database().ref('/bookings').on('value', async b => {
       fire.database().ref('/approvals').on('value', a => {
-        fire.database().ref('/bookings').on('value', async mb => {
-          fire.database().ref('/bookings').on('value', async ma => {
+        fire.database().ref('/users/'+fire.auth().currentUser.uid+'/bookings').on('value', async mb => {
+          fire.database().ref('/users/'+fire.auth().currentUser.uid+'/approvals').on('value', async ma => {
             this.setState({
               approvals: a.val(),
               bookings: b.val(),
@@ -71,6 +71,7 @@ export default class Messenger extends React.Component {
     for(var i=0; i < threads.length; i++)
     {
         let tid = threads[i];
+        console.log(tid);
         let uid = this.state.bookings.active[tid].uid;
         let st = this.state.bookings.active[tid].Ustage;
         let h = this.state.bookings.active[tid][this.trans(st)].handler;
