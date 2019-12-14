@@ -96,7 +96,7 @@ class Register extends React.Component {
               date_of_issue: doi,
               place_of_issue: poi,
               date_of_expiry: doe,
-              approver: approver
+              approver: this.state.users[approver]
             })
           }, ()=>{
             this.props.history.push('/admin/bookings')
