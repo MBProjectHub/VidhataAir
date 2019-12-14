@@ -32,8 +32,8 @@ export default class Messenger extends React.Component {
   componentDidMount() {
     fire.database().ref('/bookings').on('value', async b => {
       fire.database().ref('/approvals').on('value', a => {
-        fire.database().ref('/bookings').on('value', async mb => {
-          fire.database().ref('/bookings').on('value', async ma => {
+        fire.database().ref('/users/'+fire.auth().currentUser.uid+'/bookings').on('value', async mb => {
+          fire.database().ref('/users/'+fire.auth().currentUser.uid+'/approvals').on('value', async ma => {
             this.setState({
               approvals: a.val(),
               bookings: b.val(),
@@ -71,6 +71,7 @@ export default class Messenger extends React.Component {
     for(var i=0; i < threads.length; i++)
     {
         let tid = threads[i];
+        console.log(tid);
         let uid = this.state.bookings.active[tid].uid;
         let st = this.state.bookings.active[tid].Ustage;
         let h = this.state.bookings.active[tid][this.trans(st)].handler;
@@ -322,15 +323,13 @@ export default class Messenger extends React.Component {
           onMouseOver = {this.MouseOverRequest.bind(this,conversation)}
           onMouseOut = {this.MouseOutRequest.bind(this,conversation)}
         >
-          <div style={{ height: 50, width: 2, backgroundColor: '#0F2972', margin: '5%', marginRight: '3%' }} />
+          <div style={{ height: 60, width: 2, backgroundColor: '#0F2972', margin: '5%', marginRight: '3%' }} />
           <div>
             <div className="conversation-info">
-              <div style={{ display: 'flex', flexDirection: 'row' }}>
-                <h1 className="conversation-title">{ conversation.name }</h1>
-                <span className="text-primary mr-2" style={{ position: 'absolute', right: '8%', fontSize: 12 }}>
-                  {conversation.threadId.split('_')[3]+'-'+conversation.threadId.split('_')[2]+'-'+conversation.threadId.split('_')[1]}
-                </span>
-              </div>
+              <h1 className="conversation-title">{ conversation.name }</h1>
+              <span className="text-primary mr-2" style={{ fontSize: 12 }}>
+                {conversation.threadId.split('_')[3]+'-'+conversation.threadId.split('_')[2]+'-'+conversation.threadId.split('_')[1]}
+              </span>
               <p className="conversation-snippet">{ conversation.text }</p>
             </div>
           </div>
