@@ -68,10 +68,10 @@ class Options extends React.Component {
     if(this.props.approver) {
       return (
         <div style={{ display: 'flex', flexDirection: 'row', marginTop: '3%', justifyContent: 'center' }}>
-          <Button color={this.state.data.status == 2?"success":"secondary"} type="button" onClick={() => this.selHandler(this.state.data.choice, 2)} style={{ padding: '3%', width: '40%', borderRadius: 50 }}>
+          <Button color="success" type="button" onClick={() => this.selHandler(this.state.data.choice, 2)} style={{ padding: '3%', width: '40%', borderRadius: 50 }}>
             <i className="fa fa-thumbs-up" />{'\t'}Approve
           </Button>
-          <Button color={this.state.data.status == 3?"danger":"secondary"} type="button" onClick={() => this.selHandler(this.state.data.choice, 3)} style={{ marginLeft: '5%', width: '40%', padding: '3%', borderRadius: 50 }}>
+          <Button color="danger" type="button" onClick={() => this.selHandler(this.state.data.choice, 3)} style={{ marginLeft: '5%', width: '40%', padding: '3%', borderRadius: 50 }}>
             <i className="fa fa-thumbs-down" />{'\t'}Reject
           </Button>
         </div>
@@ -130,46 +130,59 @@ class Options extends React.Component {
   selHandler(ch, stat) {
     if(this.props.approver || this.state.data.choice != ch) {
       this.props.load();
-      fire.database().ref('/users').once('value', async snapshotU => {
-        fire.database().ref('/approvals').once('value', async snapshotA => {
-          let newData = this.props.data.bookings.active[this.props.data.threadId];
-          newData.options.choice = ch;
-          newData.options.status = stat;
-          newData.options.opts[ch].remarks = this.state.data.opts[ch].remarks;
-          let timestamp = this.getTimestamp(5,30);
-          let temp = timestamp.split('_');
-          let formatted = temp[2]+'-'+temp[1]+'-'+temp[0]+' '+temp[3]+':'+temp[4];
-          newData.options.arrivedAt = formatted;
+      let newData = this.props.data.bookings.active[this.props.data.threadId];
+      newData.options.choice = ch;
+      newData.options.status = stat;
+      if (stat == 3) {
+        newData.Ustage = 1;
+        newData.Estage = 1;
+      }
+      if(this.state.data.opts[ch].remarks)
+        newData.options.opts[ch].remarks = this.state.data.opts[ch].remarks;
+      let timestamp = this.getTimestamp(5,30);
+      let temp = timestamp.split('_');
+      let formatted = temp[2]+'-'+temp[1]+'-'+temp[0]+' '+temp[3]+':'+temp[4];
+      newData.options.arrivedAt = formatted;
 
-          temp = {bookings: this.props.data.bookings, users: snapshotU.val(), approvals: snapshotA.val()}
+      let user = this.state.approver;
+      let userVal1 = '-';
+      let userVal2 = '-';
+      let userVal3 = { Ustage: 1.5, uid: this.props.data.bookings.active[this.props.data.threadId].uid, options: newData.options };
+      let userVal4 = 'booking_'+timestamp;
+      if(this.props.approver) {
+        user = fire.auth().currentUser.uid;
+        userVal1 = {};
+        userVal2 = {};
+        userVal3 = {};
+        userVal4 = '';
+      }
 
-          temp.users[fire.auth().currentUser.uid].bookings[this.props.data.threadId] = {}
-          temp.users[fire.auth().currentUser.uid].bookings['booking_'+timestamp] = '-';
-          temp.users[this.state.approver].bookings[this.props.data.threadId] = {}
-          temp.users[this.state.approver].bookings['booking_'+timestamp] = '-';
-          temp.users[this.state.approver].approvals[this.props.data.threadId] = {}
-          temp.users[this.state.approver].approvals['booking_'+timestamp] = '-';
+      temp = {};
+      temp['/users/'+newData.uid+'/bookings/'+this.props.data.threadId] = {};
+      temp['/users/'+newData.uid+'/bookings/'+'booking_'+timestamp] = '-';
+      temp['/users/'+user+'/bookings/'+this.props.data.threadId] = {};
+      temp['/users/'+user+'/bookings/'+'booking_'+timestamp] = userVal1;
+      temp['/users/'+user+'/approvals/'+this.props.data.threadId] = {};
+      temp['/users/'+user+'/approvals/'+'booking_'+timestamp] = userVal2;
 
-          temp.bookings.active[this.props.data.threadId] = {};
-          temp.bookings.active['booking_'+timestamp] = newData;
+      temp['/bookings/active/'+this.props.data.threadId] = {};
+      temp['/bookings/active/'+'booking_'+timestamp] = newData;
 
-          temp.approvals[this.props.data.threadId] = {};
-          temp.approvals['booking_'+timestamp] = { Ustage: 1.5, uid: this.props.data.bookings.active[this.props.data.threadId].uid, options: newData.options };
+      temp['/approvals/'+this.props.data.threadId] = {};
+      temp['/approvals/'+'booking_'+timestamp] = userVal3;
 
-          await fire.database().ref('/').update(temp);
-          this.props.updateId('booking_'+timestamp);
-        });
-      });
+      fire.database().ref().update(temp);
+      this.props.updateId(userVal4);
     }
     else {
-      fire.database().ref(
-        '/bookings/active/'+this.props.data.threadId+'/options')
-        .update({ choice: -1, status: 0 });
-      fire.database().ref(
-        '/bookings/active/'+this.props.data.threadId).update({ Estage: 1 });
-      fire.database().ref('/approvals/'+this.props.data.threadId).set({});
-      fire.database().ref('/users/'+this.state.approver+'/bookings/'+this.props.data.threadId).set({});
-      fire.database().ref('/users/'+this.state.approver+'/approvals/'+this.props.data.threadId).set({});
+      let temp ={}
+      temp['/bookings/active/'+this.props.data.threadId+'/options/choice'] = -1;
+      temp['/bookings/active/'+this.props.data.threadId+'/options/status'] = 0;
+      temp['/bookings/active/'+this.props.data.threadId+'Estage'] = 1
+      temp['/approvals/'+this.props.data.threadId] = {};
+      temp['/users/'+this.state.approver+'/bookings/'+this.props.data.threadId] = {};
+      temp['/users/'+this.state.approver+'/approvals/'+this.props.data.threadId] = {};
+      fire.database().ref().set(temp);
     }
   }
 
@@ -191,7 +204,7 @@ class Options extends React.Component {
           </div>
           <div style={{display:'flex', flexDirection:'row',alignItems:'center', marginTop:'3%'}}>
             <Input readOnly id={i} style={{width:'50%', marginRight:'5%'}} label='From' placeholder='Departure City'
-              onChange={e => { opts[e.target.getAttribute('id')]['dept'] = e.target.value; console.log(opts); this.forceUpdate(); }}
+              onChange={e => { opts[e.target.getAttribute('id')]['dept'] = e.target.value; this.forceUpdate(); }}
               defaultValue={this.state.data.opts[i].dept}
             />
             <Input readOnly id={i} style={{width:'50%'}} label='To' placeholder='Arrival City'
@@ -212,6 +225,10 @@ class Options extends React.Component {
               <Input readOnly id={i} style={{width:'100%', marginBottom: '3%'}} label='Fare' placeholder='Price'
                 onChange={e => { opts[e.target.getAttribute('id')]['fare'] = e.target.value; this.forceUpdate(); }}
                 defaultValue={this.state.data.opts[i].fare}
+              />
+              <Input readOnly id={i} style={{width:'100%', marginBottom: '3%'}} label='Airline' placeholder='Airline'
+                onChange={e => { opts[e.target.getAttribute('id')]['airline'] = e.target.value; this.forceUpdate(); }}
+                defaultValue={this.state.data.opts[i].airline}
               />
             </div>
             <div style={{alignSelf: 'flex-start', width: '50%', marginTop:'3%'}}>

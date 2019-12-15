@@ -53,7 +53,6 @@ class Requestform extends React.Component {
 
   submit() {
     this.props.load();
-    fire.database().ref('/users').once('value', async snapshot => {
       let newData = this.props.data.bookings.active[this.props.data.threadId];
       newData.Estage = 0;
       newData.request['details'] = this.state;
@@ -61,18 +60,16 @@ class Requestform extends React.Component {
       let temp = timestamp.split('_');
       let formatted = temp[2]+'-'+temp[1]+'-'+temp[0]+' '+temp[3]+':'+temp[4];
       newData.request.arrivedAt = formatted;
-      
-      temp = {bookings: this.props.data.bookings, users: snapshot.val()}
 
-      temp.users[fire.auth().currentUser.uid].bookings[this.props.data.threadId] = {}
-      temp.users[fire.auth().currentUser.uid].bookings['booking_'+timestamp] = '-';
+      temp = {};
+      temp['/users/'+fire.auth().currentUser.uid+'/bookings/'+this.props.data.threadId] = {};
+      temp['/users/'+fire.auth().currentUser.uid+'/bookings/'+'booking_'+timestamp] = '-';
 
-      temp.bookings.active[this.props.data.threadId] = {};
-      temp.bookings.active['booking_'+timestamp] = newData;
+      temp['/bookings/active/'+this.props.data.threadId] = {};
+      temp['/bookings/active/'+'booking_'+timestamp] = newData;
 
-      await fire.database().ref('/').update(temp);
+      fire.database().ref().update(temp);
       this.props.updateId('booking_'+timestamp);
-    });
   }
 
   getNameFields(num) {
