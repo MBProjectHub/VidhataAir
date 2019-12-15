@@ -31,14 +31,16 @@ import { Button as SemButton, Header, Icon, Image, Modal, Form, TextArea, Label,
 class Notifications extends React.Component {
 
   state = {
-    notifs: [],
+    notifs: null,
+    allNotifs: null,
    currentModalConvos: [],
    open: false,
    currentSubject:'',
    currentFrom:'',
     currentToken:'',
     notifications:{},
-    uid:''
+    uid:'',
+    currentInitiated:''
   }
 
   componentDidMount()
@@ -56,17 +58,80 @@ class Notifications extends React.Component {
   }
 
 
-  retrieveFirebaseData()
+  getTimestamp(h,m) {
+    var t = new Date();
+    t.setHours(t.getUTCHours() + h); 
+    t.setMinutes(t.getUTCMinutes() + m);
+  
+    var timestamp =
+        t.getUTCFullYear() + "_" +
+        ("0" + (t.getMonth()+1)).slice(-2) + "_" +
+        ("0" + t.getDate()).slice(-2) + "_" +
+        ("0" + t.getHours()).slice(-2) + "_" +
+        ("0" + t.getMinutes()).slice(-2) + "_" +
+        ("0" + t.getSeconds()).slice(-2) + "_" +
+        ("0" + t.getMilliseconds()).slice(-2);
+  
+    return timestamp;
+  }
+
+  async retrieveFirebaseData()
   {
         let notifications = {}
         let notifications_arr = []
         console.log('my time')
-        fire.database().ref(`users/${this.state.uid}/notifications/`).on('value', (notifs)=>{
+
+        fire.database().ref('notifications/').on('value', (notifs)=>{
+          //notifications = notifs.val()
+                  let currentModalConvos = null
+                  let currentSubject = null
+                  let currentFrom = null
+                  let currentToken = null
+                  let currentInitiated = null
+          notifs.forEach(notification=>{
+    
+              if(notification.val().initiatedTime === this.state.currentInitiated)
+              {
+                  let conversations = []
+                  let prevDate = ""
+                  Object.values(notification.val()['conversation']).map((val)=>{
+                    
+                    if(val.time.slice(0,3)!=prevDate)
+                    {
+                      prevDate = val.time.slice(0,3)
+                      conversations.push(val.time.slice(0,5))
+                    }
+                    conversations.push(val)
+                  })
+                  
+                  currentModalConvos =  conversations 
+                  currentSubject = notification.val().subject
+                  currentFrom = notification.val().sentByname
+                  currentToken =  notification.key
+                  currentInitiated = notification.val().initiatedTime
+              }
+              
+           })
+           if(currentToken!==null)
+          this.setState({allNotifs: notifs.val(), currentToken: currentToken, currentFrom: currentFrom,
+            currentSubject: currentSubject, currentInitiated: currentInitiated, currentModalConvos: currentModalConvos
+          })
+          else
+          this.setState({allNotifs: notifs.val()
+          })
+        })
+
+        await fire.database().ref(`users/${this.state.uid}/notifications/`).on('value', (notifs)=>{
           console.log(notifs.val())
           notifications_arr = []
           //notifications = notifs.val()
           notifs.forEach(notification=>{
-              notifications_arr.push({token:notification.key, subject: notification.val().subject, timestamp:notification.val().timestamp})
+              notifications_arr.push({token:notification.key, 
+                                       subject: notification.val().subject, 
+                                       timestamp:notification.val().timestamp,
+                                       sentToName: notification.val().sentToName,
+                                      sentByname: notification.val().sentByname,
+                                      initiatedTime: notification.val().initiatedTime})
           })
           this.setState({notifs: notifications_arr})
         })
@@ -82,6 +147,13 @@ class Notifications extends React.Component {
 
   sendNotification()
   {
+  let currentDate = new Date();
+  let date = this.leftPad(currentDate.getDate(),2)
+  let month = this.leftPad(currentDate.getMonth()+1,2) 
+  let year = currentDate.getFullYear();
+  let hour = this.leftPad(currentDate.getHours(),2)
+  let mins = this.leftPad(currentDate.getMinutes(),2)
+  let secs = this.leftPad(currentDate.getSeconds(),2)
     let subject = document.getElementById('notify_sub').value
     let message = document.getElementById('notify_msg').value
 
@@ -92,16 +164,9 @@ class Notifications extends React.Component {
     }
     else
     {
-      let currentDate = new Date();
-    let date = this.leftPad(currentDate.getDate(),2)
-    let month = this.leftPad(currentDate.getMonth()+1,2) 
-    let year = currentDate.getFullYear();
-    let hour = this.leftPad(currentDate.getHours(),2)
-    let mins = this.leftPad(currentDate.getMinutes(),2)
-    let secs = this.leftPad(currentDate.getSeconds(),2)
 
 
-    let DateString = ""+year+month+date+hour+mins+secs
+    let DateString = this.getTimestamp(5,30)
     let conversation = {}
   
     let firstConvo = "convo_"+DateString
@@ -109,22 +174,31 @@ class Notifications extends React.Component {
       message: message,
       time: ""+ date + "-"+month+"-"+year+" "+hour+":"+mins} 
 
-      fire.database().ref(`users/${fire.auth().currentUser.uid}/name`).on('value',(name)=>{
+      fire.database().ref(`users/${fire.auth().currentUser.uid}`).once('value',(user)=>{
         fire.database().ref(`notifications/notify_${DateString}/`).set(
           {
           conversation: conversation,
           subject: subject,
           sentByuid: fire.auth().currentUser.uid,
           timestamp: ""+date+"/"+month+"/"+year+" "+hour+":"+mins,
-          sentByname: name.val()
+          sentByname: user.val().name,
+          sentByEmail: user.val().email,
+          sentToName: '-',
+          sentToMail: '-',
+          sentTouid: '-',
+          initiatedTime: DateString
         },()=>{
           fire.database().ref(`users/${fire.auth().currentUser.uid}/notifications/notify_${DateString}/`).set(
             {
-            conversation: conversation,
             subject: subject,
             sentByuid:fire.auth().currentUser.uid,
             timestamp: ""+date+"/"+month+"/"+year+" "+hour+":"+mins,
-            sentByname: name.val()
+            sentByname: user.val().name,
+            sentByEmail: user.val().email,
+            sentToName: '-',
+            sentToMail: '-',
+            sentTouid: '-',
+            initiatedTime: DateString
           }, ()=>{
             this.retrieveFirebaseData()
           })
@@ -178,8 +252,6 @@ class Notifications extends React.Component {
     );
   }
 
-
-
   sendMessage()
   {
     let text = document.getElementById('messageBox').value
@@ -195,42 +267,47 @@ class Notifications extends React.Component {
 
     console.log(Date.now())
 
-    let DateString = ""+year+month+date+hour+mins+secs
-    //let notifyToken = 'notify_'+DateString
-    /*  
-    fire.database().ref(`notifications/${token}`).on('value',(convos)=>{
-      fire.database().ref(`notifications/notify_${DateString}/`).set(convos.val(),()=>{
-        fire.database().ref(`notifications/notify_${DateString}/conversation/convo_${DateString}/`).set({
-          customer:true,
-          message: text,
-          time: ""+ date + "-"+month+"-"+year+" "+hour+":"+mins
-        },()=>{
-          fire.database().ref(`notifications/${token}`).remove().then(()=>{
-            fire.database().ref('notifications').on('value',(convos)=>{
-              let conversations = []
-              let prevDate = ""
-              Object.values(convos.val()[notifyToken]['conversation']).map((val)=>{
-                
-                if(val.time.slice(0,3)!=prevDate)
-                {
-                  prevDate = val.time.slice(0,3)
-                  conversations.push(val.time.slice(0,5))
-                }
-                conversations.push(val)
-              })
-              this.setState({currentModalConvos: conversations}) 
-            }) 
-          })
-        })
-      })
-    })
-    */
+    let DateString = this.getTimestamp(5,30)
+    let newToken = 'notify_'+DateString
+    let newnotif = this.state.allNotifs[token]
+    let tempnotif = {}
+    console.log(newnotif)
+    tempnotif['sentByEmail'] = newnotif['sentByEmail'] 
+    tempnotif['sentByname'] = newnotif['sentByname'] 
+    tempnotif['sentToMail'] = newnotif['sentToMail'] 
+    tempnotif['sentToName'] = newnotif['sentToName'] 
+    tempnotif['sentTouid'] = newnotif['sentTouid'] 
+    tempnotif['sentByuid'] = newnotif['sentByuid'] 
+    tempnotif['subject'] =   newnotif['subject'] 
+    tempnotif['timestamp'] = newnotif['timestamp'] 
+    tempnotif['initiatedTime'] = newnotif['initiatedTime'] 
     
-   fire.database().ref(`notifications/${token}/conversation/convo_${DateString}/`).set({
-    customer:true,
-    message: text,
-    time: ""+ date + "-"+month+"-"+year+" "+hour+":"+mins
-  })
+    let convoString = 'convo_'+DateString
+
+    console.log('New notif',this.state.allNotifs)
+    newnotif['conversation'][convoString] = {
+      customer:true,
+      message: text,
+      time: ""+ date + "-"+month+"-"+year+" "+hour+":"+mins
+    }
+      let newdbstruct = {}
+      newdbstruct['/notifications/'+token] = {}
+
+      if(newnotif['sentTouid']==="-")
+      { 
+        console.log(newnotif['sentByuid'])
+        newdbstruct['/users/'+ newnotif['sentByuid']+'/notifications/'+token] = {}
+        newdbstruct['/users/'+ newnotif['sentByuid']+'/notifications/'+newToken] = tempnotif
+      }
+      else
+      {
+      newdbstruct['/users/'+ newnotif['sentTouid']+'/notifications/'+token] = {}
+      newdbstruct['/users/'+ newnotif['sentTouid']+'/notifications/'+newToken] = tempnotif
+      }
+      
+      newdbstruct['/notifications/'+newToken] = newnotif
+      fire.database().ref().update(newdbstruct)
+  
 
     document.getElementById("messageBox").value = ""
     
@@ -283,13 +360,12 @@ class Notifications extends React.Component {
 
   openChatModal(subject, token)
   {
-    
+    console.log(this.state.allNotifs, token)
     let conversations = []
     let prevDate = ""
-    fire.database().ref('notifications').on('value',(convos)=>{
       conversations = []
 
-      Object.values(convos.val()[token]['conversation']).map((val)=>{
+      Object.values(this.state.allNotifs[token]['conversation']).map((val)=>{
         
         if(val.time.slice(0,3)!=prevDate)
         {
@@ -298,8 +374,8 @@ class Notifications extends React.Component {
         }
         conversations.push(val)
       })
-      this.setState({currentModalConvos: conversations, open:true, currentSubject: subject, currentToken: token}) 
-    }) 
+      this.setState({currentModalConvos: conversations, open:true, currentSubject: subject, currentToken: token, currentInitiated: this.state.allNotifs[token]['initiatedTime']}) 
+    
     console.log(conversations)
 
     
@@ -309,17 +385,17 @@ class Notifications extends React.Component {
   getReceived() {
     var items = [];
     console.log(this.state.notifs)
+    if(this.state.notifs!==null)
     for(var i=this.state.notifs.length-1; i>=0; i--)
     {
       items.push(
         <tr>
-          <th scope="row" class="name">
-            <div class="media align-items-center">
-              <div class="media-body">
-                <span class="mb-0 text-sm">{this.state.notifs[i].subject}</span>
-              </div>
-            </div>
-          </th>
+          <td>
+            <span class="mb-0 text-sm" >{this.state.notifs[i].sentByname}</span>  
+          </td>
+          <td>
+            <span class="mb-0 text-sm" style={{fontWeight:700}}>{this.state.notifs[i].subject}</span>  
+          </td>
           <td>
             {this.state.notifs[i].timestamp}
           </td>
@@ -337,11 +413,20 @@ class Notifications extends React.Component {
 
   loadingBar()
   {
-    if(this.state.notifs.length === 0)
+    if(this.state.notifs === null)
     {
-      return <Dimmer active>
-      <Loader size='large'>Loading</Loader>
-    </Dimmer>
+      return <Dimmer active inverted>
+        <Loader inverted content='Loading' />
+      </Dimmer>
+
+    }
+    else if(this.state.notifs.length === 0)
+    {
+      return <div style={{width:'100%', display:'flex', justifyContent:'center'}}>
+          <Header as='h2' style={{width:'100%', display:'flex', justifyContent:'center'}} block>
+      No Notifications yet
+  </Header>
+        </div>
     }
   }
 
@@ -353,14 +438,14 @@ class Notifications extends React.Component {
             <CardHeader className="border-0">
               <h3 className="mb-0">Your Notifications</h3>
               <ConversationSearch placeholder="Search Notifications"/>
-              {this.loadingBar()}
-              
-                
               
             </CardHeader>
               <table class="table align-items-center">
                 <thead class="thead-light">
                     <tr>
+                      <th scope="col">
+                            From
+                        </th>
                         <th scope="col">
                             Subject
                         </th>
@@ -375,6 +460,8 @@ class Notifications extends React.Component {
                   {this.getReceived()}
                 </tbody>
             </table>
+            
+            {this.loadingBar()}
           </Card>
         </div>
       </div>
@@ -383,7 +470,7 @@ class Notifications extends React.Component {
 
 
   render() {
-    console.log(this.state.notifs)
+    console.log(this.state.allNotifs)
     return (
       <>
         <EmptyHeader />

@@ -39,9 +39,14 @@ class Admin extends React.Component {
   }
   componentDidMount()
   {
+    fire.auth().onAuthStateChanged((user) => {
+      if(user)
+      {
     fire.database().ref(`users/${fire.auth().currentUser.uid}`).on('value',(user)=>{
       this.setState({userName: user.val().name})
     })
+  }
+  })
   }
   getRoutes = routes => {
     return routes.map((prop, key) => {

@@ -36,11 +36,13 @@ import {
 
 import { Route, Switch } from "react-router-dom";
 
+
+import CircularProgress from '@material-ui/core/CircularProgress';
 import fire from '../../config/firebaseConfig'
 
 class Register extends React.Component {
 
-  state = {users:null}
+  state = {users:null, loading:false}
 
   componentDidMount()
   {
@@ -98,10 +100,16 @@ class Register extends React.Component {
               place_of_issue: poi,
               date_of_expiry: doe,
               approver: this.state.users[approver]
+            }, ()=>{
+              this.props.history.push('/admin/bookings')
             })
-          }, ()=>{
-            this.props.history.push('/admin/bookings')
           })
+        }
+
+        else
+        {
+          this.setState({loading:false})
+            alert("Approver not found")
         }
         }
 
@@ -111,6 +119,18 @@ class Register extends React.Component {
     {
       alert("Please enter all the details");
     }
+  }
+
+  renderLoader()
+  {
+    if(this.state.loading)
+    return <CircularProgress />
+   
+    else
+   return <Button className="mt-4" color="primary" type="button" onClick={()=>{this.setState({loading:true},this.firebaseRegister.bind(this)) }}>
+   Create account
+ </Button>
+    
   }
 
   render() {
@@ -216,7 +236,7 @@ class Register extends React.Component {
                               defaultValue=""
                               id="dob"
                               placeholder="Date of Birth"
-                              type="text"
+                              type="date"
                             />
                           </FormGroup>
                         </Col>
@@ -233,7 +253,7 @@ class Register extends React.Component {
                               defaultValue=""
                               id="phone"
                               placeholder="Phone Number"
-                              type="text"
+                              type="number"
                             />
                           </FormGroup>
                         </Col>
@@ -326,7 +346,7 @@ class Register extends React.Component {
                               defaultValue=""
                               id="doi"
                               placeholder="Date of Issue"
-                              type="text"
+                              type="date"
                             />
                           </FormGroup>
                         </Col>
@@ -362,7 +382,7 @@ class Register extends React.Component {
                               defaultValue=""
                               id="doe"
                               placeholder="Date of Expiry"
-                              type="text"
+                              type="date"
                             />
                           </FormGroup>
                         </Col>
@@ -371,9 +391,7 @@ class Register extends React.Component {
                   </Form>
               
                 <div className="text-center">
-                  <Button className="mt-4" color="primary" type="button" onClick={this.firebaseRegister.bind(this)}>
-                    Create account
-                  </Button>
+                  {this.renderLoader()}
                 </div>
             </CardBody>
           </Card>
