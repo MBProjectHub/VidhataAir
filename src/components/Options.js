@@ -160,10 +160,15 @@ class Options extends React.Component {
       temp = {};
       temp['/users/'+newData.uid+'/bookings/'+this.props.data.threadId] = {};
       temp['/users/'+newData.uid+'/bookings/'+'booking_'+timestamp] = '-';
-      temp['/users/'+user+'/bookings/'+this.props.data.threadId] = {};
-      temp['/users/'+user+'/bookings/'+'booking_'+timestamp] = userVal1;
-      temp['/users/'+user+'/approvals/'+this.props.data.threadId] = {};
-      temp['/users/'+user+'/approvals/'+'booking_'+timestamp] = userVal2;
+
+      if(user != '-') {
+        temp['/users/'+user+'/bookings/'+this.props.data.threadId] = {};
+        temp['/users/'+user+'/bookings/'+'booking_'+timestamp] = userVal1;
+        temp['/users/'+user+'/approvals/'+this.props.data.threadId] = {};
+        temp['/users/'+user+'/approvals/'+'booking_'+timestamp] = userVal2;
+      }
+      else
+        newData.options.status = 2;
 
       temp['/bookings/active/'+this.props.data.threadId] = {};
       temp['/bookings/active/'+'booking_'+timestamp] = newData;
