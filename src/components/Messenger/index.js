@@ -218,11 +218,15 @@ export default class Messenger extends React.Component {
     fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 1 });
     if(this.state.currentProgressStage != 1)
       this.setState({ loading: true });
-    } else if(label == steps[2] && this.state.bookings.active[this.state.currentSelected].confirmation.details && this.state.bookings.active[this.state.currentSelected].options.status != 3) {
+    } else if(label == steps[2]
+        && this.state.bookings.active[this.state.currentSelected].confirmation.details != '-'
+        && this.state.bookings.active[this.state.currentSelected].options.status != 3
+        && this.state.bookings.active[this.state.currentSelected].options.status != -1
+        && this.state.bookings.active[this.state.currentSelected].options.status != 0) {
       fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 2 });
       if(this.state.currentProgressStage != 2)
         this.setState({ loading: true });
-    } else if(label == steps[3]) {
+    } else if(label == steps[3] && this.state.currentProgressStage == 2) {
       fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 3 });
       if(this.state.currentProgressStage != 3)
         this.setState({ loading: true });
