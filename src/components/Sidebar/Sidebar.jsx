@@ -245,6 +245,16 @@ class Sidebar extends React.Component {
 
             {/* Heading */}
             {/*<h6 className="navbar-heading text-muted">Documentation</h6>*/}
+            <h6 className="navbar-heading text-muted">Contact Us</h6>
+
+            <div style={{display:'flex', alignItems:'center'}}>
+              <i class="glyphicon glyphicon-phone" style={{color:'green'}}></i>
+            <a style={{fontSize:13, paddingLeft:'10%'}}>9738826242</a></div>
+            
+
+            <div style={{display:'flex', alignItems:'center', marginTop:'5%'}}>
+            <i class="fa fa-envelope" aria-hidden="true" style={{color:'orange'}}></i>
+            <a style={{fontSize:13, paddingLeft:'10%'}}>dummy@gmail.com</a></div>
             {/* Navigation */}
             {/*
             <Nav className="mb-md-3" navbar>
