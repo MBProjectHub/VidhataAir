@@ -46,14 +46,15 @@ class Register extends React.Component {
   {
     fire.database().ref('users').on('value',(users)=>{
       let user_obj = {}
-
+      if(users.hasChildren())
+      {
       Object.entries(users.val()).map(([key,val])=>{
         user_obj[val.email] = key
       })
 
       this.setState({users: user_obj})
       console.log(user_obj)
-
+    }
     })
   }
 
