@@ -21,6 +21,7 @@ export default class Messenger extends React.Component {
     approvals: {},
     myBookings: {},
     myApprovals: {},
+    users: {},
     conversations:[],
     currentProgressStage:"",
     currentSelected:"",
@@ -31,16 +32,15 @@ export default class Messenger extends React.Component {
 
   componentDidMount() {
     fire.database().ref('/bookings').on('value', async b => {
-      fire.database().ref('/approvals').on('value', a => {
-        fire.database().ref('/users/'+fire.auth().currentUser.uid+'/bookings').on('value', async mb => {
-          fire.database().ref('/users/'+fire.auth().currentUser.uid+'/approvals').on('value', async ma => {
-            this.setState({
-              approvals: a.val(),
-              bookings: b.val(),
-              myApprovals: ma.val(),
-              myBookings: mb.val()
-            }, () => this.loadConvos());
-          });
+      await fire.database().ref('/approvals').on('value', async a => {
+            await fire.database().ref('/users').on('value', u => {
+              this.setState({
+                approvals: a.val(),
+                bookings: b.val(),
+                myApprovals: u.val()[fire.auth().currentUser.uid].approvals,
+                myBookings: u.val()[fire.auth().currentUser.uid].bookings,
+                users: u.val()
+              }, () => this.loadConvos());
         });
       });
     });
@@ -59,7 +59,8 @@ export default class Messenger extends React.Component {
     }
   }
 
-  async loadConvos() {
+  loadConvos() {
+    let update = true;
     let threads = [];
     if(this.state.bookings && this.state.bookings.active && this.state.myBookings)
       threads = Object.keys(this.state.myBookings)
@@ -71,8 +72,10 @@ export default class Messenger extends React.Component {
     for(var i=0; i < threads.length; i++)
     {
         let tid = threads[i];
-        if(!this.state.bookings.active[tid])
+        if(!this.state.bookings.active[tid]) {
+          update = false;
           break;
+        }
         let uid = this.state.bookings.active[tid].uid;
         let st = this.state.bookings.active[tid].Ustage;
         let h = this.state.bookings.active[tid][this.trans(st)].handler;
@@ -89,22 +92,22 @@ export default class Messenger extends React.Component {
           dept = 'Flight Approval';
           arr = '';
         }
-        await fire.database().ref('/users/'+uid).once('value', snapshot => {
+        if(this.state.users && this.state.users[uid]){
           tempConvos.unshift({
             threadId: tid,
-            name: snapshot.val().name,
-            department: snapshot.val().department,
+            name: this.state.users[uid].name,
+            department: this.state.users[uid].department,
             text: dept + ' > ' + arr,
             stage: st,
             handler: h,
             handledAt: ha,
             arrivedAt: a
           })
-        });
+        }
         if(tid == this.state.currentSelected)
           tempCur = tempConvos[0];
     }
-    if(Object.keys(tempCur).length != 0) {
+    if(update && Object.keys(tempCur).length != 0) {
       this.setState({
         conversations: tempConvos,
         currentSelected: tempCur.threadId,
@@ -120,7 +123,7 @@ export default class Messenger extends React.Component {
             currentConversation: this.state.conversations[0]
           });
       });
-    } else
+    } else if(update)
       this.setState({
         conversations: tempConvos,
         loading: false
@@ -171,11 +174,12 @@ export default class Messenger extends React.Component {
 
   ClickRequest(conversation)
   {
+    console.log(conversation)
     this.state.conversations.forEach(conversation => {
       document.getElementById(conversation.threadId).style.background = "#fff"
       });
       document.getElementById(conversation.threadId).style.background = "#eeeef1"
-      this.setState({currentSelected:conversation.threadId, currentProgressStage:conversation.stage, currentConversation: conversation})
+      this.setState({currentSelected:conversation.threadId, currentProgressStage:conversation.stage, currentConversation: conversation});
   }
 
   MouseOverRequest(conversation)
@@ -209,6 +213,7 @@ export default class Messenger extends React.Component {
 
   stageClick(label) {
   let steps = ['Initiate Request', 'Flight Options', 'Booking Confirmation', 'Booking Complete'];
+  let cur = this.state.bookings.active[this.state.currentSelected];
 
   if(label == steps[0]) {
     fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 0 });
@@ -218,11 +223,7 @@ export default class Messenger extends React.Component {
     fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 1 });
     if(this.state.currentProgressStage != 1)
       this.setState({ loading: true });
-    } else if(label == steps[2]
-        && this.state.bookings.active[this.state.currentSelected].confirmation.details != '-'
-        && this.state.bookings.active[this.state.currentSelected].options.status != 3
-        && this.state.bookings.active[this.state.currentSelected].options.status != -1
-        && this.state.bookings.active[this.state.currentSelected].options.status != 0) {
+    } else if(label == steps[2] && cur.confirmation.details != '-' && cur.options.status != 3 && cur.options.status != -1 && cur.options.status != 0) {
       fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 2 });
       if(this.state.currentProgressStage != 2)
         this.setState({ loading: true });
@@ -300,7 +301,7 @@ export default class Messenger extends React.Component {
       <Container style={{padding:0}}>
         <Row  style={{height:'30%',backgroundColor:'#FAFAFA', boxShadow: '0 5px 5px rgba(0,0,0,0.22)', marginRight:0, marginLeft:0, paddingTop: 10}}>
           <Col>
-          <ProfileCard data={this.state.currentConversation} />
+          <ProfileCard data={this.state.currentConversation} name={this.state.users[this.state.currentConversation.handler].name} />
           </Col>
           <Col>
           <div>

@@ -14,20 +14,6 @@ import {
 
 class ProfileCard extends React.Component {
 
-  state = {
-    name: '-'
-  }
-
-  getName(id) {
-    if(id != '-')
-    {
-      fire.database().ref('/users/'+id)
-      .once('value', snapshot => this.setState({ name: snapshot.val().name }));
-      return this.state.name;
-    }
-    return id
-  }
-
   render() {
     return (
       <>
@@ -59,7 +45,7 @@ class ProfileCard extends React.Component {
                 <span className="text-success mr-2">
                   {this.props.data.handledAt.substring(this.props.data.handledAt.length-5)}
                 </span>
-                <span style={{color:'#272727'}} className="text-nowrap">Read by {this.getName(this.props.data.handler)}</span>
+                <span style={{color:'#272727'}} className="text-nowrap">Read by {this.props.name}</span>
               </p>
             </CardBody>
           </Card>
