@@ -28,9 +28,11 @@ class Options extends React.Component {
         if(!data.opts)
           data['opts'] = [];
         fire.database().ref('/users/'+this.props.data.bookings.active[this.props.data.threadId].uid).once('value', snapshot => {
-          this.setState({ data: data, approver: snapshot.val().approver, cardOptions: [] }, () => {
+          this.setState({ data: data, approver: snapshot.val().approver }, () => {
+            let cardOptions = [];
             for(var i=0; i < this.state.data.opts.length; i++)
-              this.addOption(this.state.cardOptions, i, false);
+              this.addOption(cardOptions, i);
+            this.setState({ cardOptions:cardOptions });
           });
         });
     }
@@ -45,9 +47,11 @@ class Options extends React.Component {
           if(!data.opts)
             data['opts'] = [];
             fire.database().ref('/users/'+this.props.data.bookings.active[this.props.data.threadId].uid).once('value', snapshot => {
-              this.setState({ data: data, approver: snapshot.val().approver, cardOptions: [] }, () => {
+              this.setState({ data: data, approver: snapshot.val().approver }, () => {
+                let cardOptions = [];
                 for(var i=0; i < this.state.data.opts.length; i++)
-                  this.addOption(this.state.cardOptions, i, false);
+                  this.addOption(cardOptions, i);
+                this.setState({ cardOptions:cardOptions });
               });
             });
       }
@@ -205,11 +209,9 @@ class Options extends React.Component {
     }
   }
 
-  addOption(arr, i, updateOpts) {
+  addOption(arr, i) {
     let cardOptions = arr;
     let opts = this.state.data.opts;
-    if(updateOpts)
-      opts.push({});
     cardOptions.push(
     <div>
       <a class="ui card" style={{ background:'#fff', width:'90%', boxShadow:'0 5px 9px 0 #fafafa, 0 0 0 1px #fafafa', marginBottom:'3%'}}>
@@ -262,14 +264,6 @@ class Options extends React.Component {
         </div>
       </a>
     </div>);
-
-    if(updateOpts) {
-      let temp = this.state.data;
-      temp['opts'] = opts;
-      this.setState({ cardOptions:cardOptions, data: temp });
-    }
-    else
-      this.setState({ cardOptions:cardOptions });
   }
 
   render() {
