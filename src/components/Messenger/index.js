@@ -223,7 +223,7 @@ export default class Messenger extends React.Component {
     fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 1 });
     if(this.state.currentProgressStage != 1)
       this.setState({ loading: true });
-    } else if(label == steps[2] && cur.confirmation.details != '-' && cur.options.status != 3 && cur.options.status != -1 && cur.options.status != 0) {
+    } else if(label == steps[2] && cur && cur.confirmation.details != '-' && cur.options.status != 3 && cur.options.status != -1 && cur.options.status != 0) {
       fire.database().ref('/bookings/active/'+this.state.currentSelected).update({ Ustage: 2 });
       if(this.state.currentProgressStage != 2)
         this.setState({ loading: true });
@@ -282,9 +282,9 @@ export default class Messenger extends React.Component {
     </div>
     }
     else if(conversation.stage == 1)
-      return <Options approver={false} update={[0]} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
+      return <Options approver={false} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
     else if(conversation.stage == 1.5)
-      return <Options approver={true} update={[0]} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
+      return <Options approver={true} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
     else
     {
       return <div style={{height:'70%',paddingTop:'3%',marginTop:'2%',marginBottom:'2%', paddingBottom:'3%', overflowY:'scroll', width:'100%'}}>
@@ -298,7 +298,7 @@ export default class Messenger extends React.Component {
     if(this.state.currentSelected!=="")
     {
       let name = '-';
-      if(this.state.currentConversation.handler != '-')
+      if(this.state.users && this.state.currentConversation.handler != '-')
         name = this.state.users[this.state.currentConversation.handler].name;
       return <div style={{width:'100%',height: window.innerHeight, position:'relative'}}>
       <Container style={{padding:0}}>

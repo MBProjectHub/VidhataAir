@@ -196,11 +196,12 @@ class Options extends React.Component {
 
       temp['/bookings/active/'+this.props.data.threadId] = {};
       temp['/bookings/active/'+'booking_'+timestamp] = newData;
-      
+
       temp['/approvals/'+this.props.data.threadId] = {};
       temp['/users/'+this.state.approver+'/bookings/'+this.props.data.threadId] = {};
       temp['/users/'+this.state.approver+'/approvals/'+this.props.data.threadId] = {};
-      fire.database().ref().set(temp);
+      fire.database().ref().update(temp);
+      this.props.updateId('booking_'+timestamp);
     }
   }
 
