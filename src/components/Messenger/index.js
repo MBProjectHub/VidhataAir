@@ -295,11 +295,11 @@ export default class Messenger extends React.Component {
 
   loadStage()
   {
-    let name = '-';
-    if(this.state.currentConversation.handler != '-')
-      name = this.state.users[this.state.currentConversation.handler].name;
     if(this.state.currentSelected!=="")
     {
+      let name = '-';
+      if(this.state.currentConversation.handler != '-')
+        name = this.state.users[this.state.currentConversation.handler].name;
       return <div style={{width:'100%',height: window.innerHeight, position:'relative'}}>
       <Container style={{padding:0}}>
         <Row  style={{height:'30%',backgroundColor:'#FAFAFA', boxShadow: '0 5px 5px rgba(0,0,0,0.22)', marginRight:0, marginLeft:0, paddingTop: 10}}>
