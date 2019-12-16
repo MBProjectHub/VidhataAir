@@ -109,6 +109,10 @@ class Register extends React.Component {
               this.props.history.push('/admin/bookings')
             })
           })
+          .catch(()=>{
+            this.setState({loading:false})
+            alert("Email already exists")
+          })
         }
 
         else

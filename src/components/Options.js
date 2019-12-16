@@ -6,7 +6,7 @@ import {
   Alert
 } from "reactstrap";
 
-import { Input } from 'semantic-ui-react';
+import { Input, Message, Icon } from 'semantic-ui-react';
 
 class Options extends React.Component {
 
@@ -81,30 +81,33 @@ class Options extends React.Component {
     {
       if(this.state.data.status == 1) {
         return (
-          <div>
-            <Alert color="info" style={{ marginTop: '3%', textAlign: 'center' }}>
-              <img src={require('../assets/img/icons/common/tick.png')} style={{width:15, height:15, marginRight: 10}} />
-              Selected Flight Option
-            </Alert>
-          </div>
+          <div style={{ marginTop: '3%', textAlign: 'center' }}>
+            <Message info>
+    <Message.Content>
+      <Message.Header>Selected Flight Option</Message.Header>
+    </Message.Content>
+  </Message>
+  </div>
         );
       } else if(this.state.data.status == 2) {
         return (
-          <div>
-            <Alert color="success" style={{ marginTop: '3%', textAlign: 'center' }}>
-              <i className="fa fa-thumbs-up" style={{ marginRight: 10 }} />
-              Flight Option Approved
-            </Alert>
-          </div>
+          <div style={{ marginTop: '3%', textAlign: 'center' }}>
+            <Message positive>
+    <Message.Content>
+      <Message.Header> Flight Option Approved</Message.Header>
+    </Message.Content>
+  </Message>
+  </div>
         );
       } else if(this.state.data.status == 3) {
         return (
-          <div>
-            <Alert color="danger" style={{ marginTop: '3%', textAlign: 'center' }}>
-              <i className="fa fa-thumbs-down" style={{ marginRight: 10 }} />
-              Flight Option Rejected
-            </Alert>
-          </div>
+          <div style={{ marginTop: '3%', textAlign: 'center' }}>
+            <Message negative>
+    <Message.Content>
+      <Message.Header> Flight Option Rejected</Message.Header>
+    </Message.Content>
+  </Message>
+  </div>
         );
       }
     }
