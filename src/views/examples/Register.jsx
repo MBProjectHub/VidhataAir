@@ -82,8 +82,13 @@ class Register extends React.Component {
     { 
       if(this.state.users!== null)
       {
+        let approverMail = ""
+        if( approver==="-")
+        approverMail = "-"
+        else
+         approverMail = this.state.users[approver]
         console.log('arrover', this.state.users[approver])
-        if(this.state.users[approver]!==undefined)
+        if(this.state.users[approver]!==undefined || approver==="-")
         {
           fire.auth().createUserWithEmailAndPassword(email, password)
           .then(()=>{
@@ -99,7 +104,7 @@ class Register extends React.Component {
               date_of_issue: doi,
               place_of_issue: poi,
               date_of_expiry: doe,
-              approver: this.state.users[approver]
+              approver: approverMail
             }, ()=>{
               this.props.history.push('/admin/bookings')
             })
