@@ -21,7 +21,7 @@ export default class Messenger extends React.Component {
     approvals: {},
     myBookings: {},
     myApprovals: {},
-    user: {},
+    users: {},
     conversations:[],
     currentProgressStage:"",
     currentSelected:"",
@@ -33,13 +33,13 @@ export default class Messenger extends React.Component {
   componentDidMount() {
     fire.database().ref('/bookings').on('value', async b => {
       await fire.database().ref('/approvals').on('value', async a => {
-            await fire.database().ref('/users/'+fire.auth().currentUser.uid).on('value', u => {
+            await fire.database().ref('/users').on('value', u => {
               this.setState({
                 approvals: a.val(),
                 bookings: b.val(),
-                myApprovals: u.val().approvals,
-                myBookings: u.val().bookings,
-                user: u.val()
+                myApprovals: u.val()[fire.auth().currentUser.uid].approvals,
+                myBookings: u.val()[fire.auth().currentUser.uid].bookings,
+                users: u.val()
               }, () => this.loadConvos());
         });
       });
@@ -92,11 +92,11 @@ export default class Messenger extends React.Component {
           dept = 'Flight Approval';
           arr = '';
         }
-        if(this.state.user){
+        if(this.state.users && this.state.users[uid]){
           tempConvos.unshift({
             threadId: tid,
-            name: this.state.user.name,
-            department: this.state.user.department,
+            name: this.state.users[uid].name,
+            department: this.state.users[uid].department,
             text: dept + ' > ' + arr,
             stage: st,
             handler: h,
@@ -301,7 +301,7 @@ export default class Messenger extends React.Component {
       <Container style={{padding:0}}>
         <Row  style={{height:'30%',backgroundColor:'#FAFAFA', boxShadow: '0 5px 5px rgba(0,0,0,0.22)', marginRight:0, marginLeft:0, paddingTop: 10}}>
           <Col>
-          <ProfileCard data={this.state.currentConversation} />
+          <ProfileCard data={this.state.currentConversation} name={this.state.users[this.state.currentConversation.handler].name} />
           </Col>
           <Col>
           <div>
