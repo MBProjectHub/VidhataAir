@@ -180,10 +180,23 @@ class Options extends React.Component {
       this.props.updateId(userVal4);
     }
     else {
-      let temp ={}
-      temp['/bookings/active/'+this.props.data.threadId+'/options/choice'] = -1;
-      temp['/bookings/active/'+this.props.data.threadId+'/options/status'] = 0;
-      temp['/bookings/active/'+this.props.data.threadId+'Estage'] = 1
+      let newData = this.props.data.bookings.active[this.props.data.threadId];
+      newData.options.choice = -1;
+      newData.options.status = 0;
+      newData.Estage = 1;
+
+      let timestamp = this.getTimestamp(5,30);
+      let temp = timestamp.split('_');
+      let formatted = temp[2]+'-'+temp[1]+'-'+temp[0]+' '+temp[3]+':'+temp[4];
+      newData.options.arrivedAt = formatted;
+
+      temp ={}
+      temp['/users/'+newData.uid+'/bookings/'+this.props.data.threadId] = {};
+      temp['/users/'+newData.uid+'/bookings/'+'booking_'+timestamp] = '-';
+
+      temp['/bookings/active/'+this.props.data.threadId] = {};
+      temp['/bookings/active/'+'booking_'+timestamp] = newData;
+      
       temp['/approvals/'+this.props.data.threadId] = {};
       temp['/users/'+this.state.approver+'/bookings/'+this.props.data.threadId] = {};
       temp['/users/'+this.state.approver+'/approvals/'+this.props.data.threadId] = {};
