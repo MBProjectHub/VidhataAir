@@ -1,20 +1,4 @@
-/*!
 
-=========================================================
-* Argon Dashboard React - v1.0.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/argon-dashboard-react
-* Copyright 2019 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/argon-dashboard-react/blob/master/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
 import React from "react";
 
 // reactstrap components
@@ -37,7 +21,7 @@ import fire from '../config/firebaseConfig'
 import {Dimmer, Loader} from 'semantic-ui-react'
 class Profile extends React.Component {
 
-  state= {userDetails:null}
+  state= {userDetails:null, editing:"true"}
 
   componentDidMount()
   {
@@ -49,6 +33,8 @@ class Profile extends React.Component {
     })
   }
 })
+
+
   }
 
   renderForm()
@@ -82,7 +68,7 @@ class Profile extends React.Component {
                 id="name"
                 placeholder="Name"
                 type="text"
-                readonly="true"
+                readonly={this.state.editing}
               />
             </FormGroup>
           </Col>
@@ -101,8 +87,7 @@ class Profile extends React.Component {
                 id="approver"
                 placeholder="Approver Email Id"
                 type="text"
-                
-                readonly="true"
+                readonly={this.state.editing}
               />
             </FormGroup>
           </Col>
@@ -122,7 +107,7 @@ class Profile extends React.Component {
                 placeholder="jesse@example.com"
                 type="email"
                 defaultValue = {this.state.userDetails.email}
-                readonly="true"
+                readonly={this.state.editing}
               />
             </FormGroup>
           </Col>
@@ -151,7 +136,7 @@ class Profile extends React.Component {
                 placeholder="Date of Birth"
                 type="text"
                 
-                readonly="true"
+                readonly={this.state.editing}
               />
             </FormGroup>
           </Col>
@@ -171,7 +156,7 @@ class Profile extends React.Component {
                 placeholder="Phone Number"
                 type="text"
                 
-                readonly="true"
+                readonly={this.state.editing}
               />
             </FormGroup>
           </Col>
@@ -193,7 +178,7 @@ class Profile extends React.Component {
                 placeholder="Department"
                 type="text"
                 
-                readonly="true"
+                readonly={this.state.editing}
               />
             </FormGroup>
           </Col>
@@ -213,7 +198,7 @@ class Profile extends React.Component {
                 placeholder="Seat Preference"
                 type="text"
                 
-                readonly="true"
+                readonly={this.state.editing}
               />
             </FormGroup>
           </Col>
@@ -232,7 +217,7 @@ class Profile extends React.Component {
                 type="text"
                 
                 defaultValue = {this.state.userDetails.mealPreference}
-                readonly="true"
+                readonly={this.state.editing}
               />
             </FormGroup>
           </Col>
@@ -259,7 +244,7 @@ class Profile extends React.Component {
                 placeholder="Passport Number"
                 type="text"
                 
-                readonly="true"
+                readonly={this.state.editing}
               />
             </FormGroup>
           </Col>
@@ -279,7 +264,7 @@ class Profile extends React.Component {
                 placeholder="Date of Issue"
                 type="text"
                 
-                readonly="true"
+                readonly={this.state.editing}
               />
             </FormGroup>
           </Col>
@@ -301,7 +286,7 @@ class Profile extends React.Component {
                 placeholder="Place of Issue"
                 type="text"
                 
-                readonly="true"
+                readonly={this.state.editing}
               />
             </FormGroup>
           </Col>
@@ -321,7 +306,7 @@ class Profile extends React.Component {
                 placeholder="Date of Expiry"
                 type="text"
                 
-                readonly="true"
+                readonly={this.state.editing}
               />
             </FormGroup>
           </Col>
@@ -339,7 +324,34 @@ class Profile extends React.Component {
     }
   }
 
+  renderButton()
+  {
+    if(this.state.editing)
+    {
+      return <Button
+      color="primary"
+      href="#pablo"
+      onClick={()=>{this.setState({editing:false})}}
+      size="sm"
+    >
+      Edit Profile
+    </Button>
+    }
+    else
+    {
+      return <Button
+      color="primary"
+      href="#pablo"
+      onClick={()=>{this.setState({editing:"true"})}}
+      size="sm"
+    >
+      Done
+    </Button>
+    }
+                        
+  }
   render() {
+    console.log(this.state.editing  )
     return (
       <>
         <UserHeader />
@@ -354,14 +366,7 @@ class Profile extends React.Component {
                       <h3 className="mb-0">My account</h3>
                     </Col>
                     <Col className="text-right" xs="4">
-                      <Button
-                        color="primary"
-                        href="#pablo"
-                        onClick={e => e.preventDefault()}
-                        size="sm"
-                      >
-                        Settings
-                      </Button>
+                      {this.renderButton()}
                     </Col>
                   </Row>
                 </CardHeader>

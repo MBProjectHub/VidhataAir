@@ -18,6 +18,7 @@ class Options extends React.Component {
       choice: -1,
       status: 1
     }
+  
   }
 
   componentDidMount() {
