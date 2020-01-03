@@ -76,6 +76,7 @@ export default class Messenger extends React.Component {
           update = false;
           break;
         }
+        let iid = this.state.bookings.active[tid].initId;
         let uid = this.state.bookings.active[tid].uid;
         let st = this.state.bookings.active[tid].Ustage;
         let h = this.state.bookings.active[tid][this.trans(st)].handler;
@@ -95,6 +96,7 @@ export default class Messenger extends React.Component {
         if(this.state.users && this.state.users[uid]){
           tempConvos.unshift({
             threadId: tid,
+            initId: iid,
             name: this.state.users[uid].name,
             department: this.state.users[uid].department,
             text: dept + ' > ' + arr,
@@ -104,7 +106,7 @@ export default class Messenger extends React.Component {
             arrivedAt: a
           })
         }
-        if(tid == this.state.currentSelected)
+        if(this.state.currentConversation.initId && iid.substring(1) == this.state.currentConversation.initId.substring(1))
           tempCur = tempConvos[0];
     }
     if(update && Object.keys(tempCur).length != 0) {
@@ -118,7 +120,7 @@ export default class Messenger extends React.Component {
         if(this.state.newBooking)
           this.setState({
             newBooking: false,
-            currentSelected: this.state.conversations[0].name,
+            currentSelected: this.state.conversations[0].threadId,
             currentProgressStage: this.state.conversations[0].stage,
             currentConversation: this.state.conversations[0]
           });
@@ -131,7 +133,7 @@ export default class Messenger extends React.Component {
         if(this.state.newBooking)
           this.setState({
             newBooking: false,
-            currentSelected: this.state.conversations[0].name,
+            currentSelected: this.state.conversations[0].threadId,
             currentProgressStage: this.state.conversations[0].stage,
             currentConversation: this.state.conversations[0]
           });
@@ -163,7 +165,8 @@ export default class Messenger extends React.Component {
       },
       Estage: -1,
       Ustage : 0,
-      uid : fire.auth().currentUser.uid
+      uid : fire.auth().currentUser.uid,
+      initId: '!' + str
     }
     fire.database().ref('/bookings/active').update(newThread);
     let temp = {};
@@ -174,6 +177,9 @@ export default class Messenger extends React.Component {
 
   ClickRequest(conversation)
   {
+    if(conversation.initId.charAt(0) == '!')
+      fire.database().ref('/bookings/active/'+conversation.threadId).update({ initId: '_' + conversation.initId.substring(1) })
+
     console.log(conversation)
     this.state.conversations.forEach(conversation => {
       document.getElementById(conversation.threadId).style.background = "#fff"
@@ -278,17 +284,17 @@ export default class Messenger extends React.Component {
     if(conversation.stage == 0)
     {
       return <div style={{height:'70%',paddingTop:'3%',marginTop:'2%',marginBottom:'2%', paddingBottom:'3%', overflowY:'scroll', width:'100%'}}>
-      <RequestForm editable={true} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
+      <RequestForm editable={true} load={() => this.setState({ loading: true })} data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
     </div>
     }
     else if(conversation.stage == 1)
-      return <Options approver={false} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
+      return <Options approver={false} load={() => this.setState({ loading: true })} data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
     else if(conversation.stage == 1.5)
-      return <Options approver={true} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id })} data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
+      return <Options approver={true} load={() => this.setState({ loading: true })} data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
     else
     {
       return <div style={{height:'70%',paddingTop:'3%',marginTop:'2%',marginBottom:'2%', paddingBottom:'3%', overflowY:'scroll', width:'100%'}}>
-        <ConfirmationForm editable={false} load={() => this.setState({ loading: true })} updateId={id => this.setState({ currentSelected: id }) } data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
+        <ConfirmationForm editable={false} load={() => this.setState({ loading: true })} data={{ ...this.state.currentConversation, bookings: this.state.bookings }} />
     </div>
     }
   }
@@ -335,11 +341,11 @@ export default class Messenger extends React.Component {
           <div style={{ height: 60, width: 2, backgroundColor: '#0F2972', margin: '5%', marginRight: '3%' }} />
           <div>
             <div className="conversation-info">
-              <h1 className="conversation-title">{ conversation.name }</h1>
-              <span className="text-primary mr-2" style={{ fontSize: 12 }}>
+              <h1 className="conversation-title" style={{ fontWeight: conversation.initId.charAt(0) == '!'? 900 : 500 }}>{ conversation.name }</h1>
+              <span className="text-primary mr-2" style={{ fontSize: 12, fontWeight: conversation.initId.charAt(0) == '!'? 900 : 300 }}>
                 {conversation.threadId.split('_')[3]+'-'+conversation.threadId.split('_')[2]+'-'+conversation.threadId.split('_')[1]}
               </span>
-              <p className="conversation-snippet">{ conversation.text }</p>
+              <p className="conversation-snippet" style={{ fontWeight: conversation.initId.charAt(0) == '!'? 900 : 300 }}>{ conversation.text }</p>
             </div>
           </div>
         </div>

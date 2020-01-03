@@ -18,7 +18,7 @@ class Options extends React.Component {
       choice: -1,
       status: 1
     }
-  
+
   }
 
   componentDidMount() {
@@ -151,6 +151,7 @@ class Options extends React.Component {
       let temp = timestamp.split('_');
       let formatted = temp[2]+'-'+temp[1]+'-'+temp[0]+' '+temp[3]+':'+temp[4];
       newData.options.arrivedAt = formatted;
+      newData['initId'] = '*' + this.props.data.initId.substring(1);
 
       let user = this.state.approver;
       let userVal1 = '-';
@@ -185,7 +186,6 @@ class Options extends React.Component {
       temp['/approvals/'+'booking_'+timestamp] = userVal3;
 
       fire.database().ref().update(temp);
-      this.props.updateId(userVal4);
     }
     else {
       let newData = this.props.data.bookings.active[this.props.data.threadId];
@@ -197,6 +197,7 @@ class Options extends React.Component {
       let temp = timestamp.split('_');
       let formatted = temp[2]+'-'+temp[1]+'-'+temp[0]+' '+temp[3]+':'+temp[4];
       newData.options.arrivedAt = formatted;
+      newData['initId'] = '*' + this.props.data.initId.substring(1);
 
       temp ={}
       temp['/users/'+newData.uid+'/bookings/'+this.props.data.threadId] = {};
@@ -208,8 +209,8 @@ class Options extends React.Component {
       temp['/approvals/'+this.props.data.threadId] = {};
       temp['/users/'+this.state.approver+'/bookings/'+this.props.data.threadId] = {};
       temp['/users/'+this.state.approver+'/approvals/'+this.props.data.threadId] = {};
+
       fire.database().ref().update(temp);
-      this.props.updateId('booking_'+timestamp);
     }
   }
 
