@@ -92,6 +92,7 @@ class Notifications extends React.Component {
     
               if(notification.val().initiatedTime === this.state.currentInitiated)
               {
+                  fire.database().ref(`users/${fire.auth().currentUser.uid}/notifications/${notification.key}/opened`).set(true)
                   let conversations = []
                   let prevDate = ""
                   Object.values(notification.val()['conversation']).map((val)=>{
@@ -131,7 +132,8 @@ class Notifications extends React.Component {
                                        timestamp:notification.val().timestamp,
                                        sentToName: notification.val().sentToName,
                                       sentByname: notification.val().sentByname,
-                                      initiatedTime: notification.val().initiatedTime})
+                                      initiatedTime: notification.val().initiatedTime,
+                                    opened:notification.val().opened})
           })
           this.setState({notifs: notifications_arr})
         })
@@ -186,7 +188,8 @@ class Notifications extends React.Component {
           sentToName: '-',
           sentToMail: '-',
           sentTouid: '-',
-          initiatedTime: DateString
+          initiatedTime: DateString,
+          opened:false
         },()=>{
           fire.database().ref(`users/${fire.auth().currentUser.uid}/notifications/notify_${DateString}/`).set(
             {
@@ -198,7 +201,8 @@ class Notifications extends React.Component {
             sentToName: '-',
             sentToMail: '-',
             sentTouid: '-',
-            initiatedTime: DateString
+            initiatedTime: DateString,
+            opened:true
           }, ()=>{
             this.retrieveFirebaseData()
           })
@@ -281,7 +285,9 @@ class Notifications extends React.Component {
     tempnotif['subject'] =   newnotif['subject'] 
     tempnotif['timestamp'] = newnotif['timestamp'] 
     tempnotif['initiatedTime'] = newnotif['initiatedTime'] 
+    tempnotif['opened'] = true
     
+    newnotif['opened'] = false
     let convoString = 'convo_'+DateString
 
     console.log('New notif',this.state.allNotifs)
@@ -314,7 +320,8 @@ class Notifications extends React.Component {
     console.log(text, uid, DateString)
   }
   
-  close = () => this.setState({ open: false })
+  close = () => this.setState({ open: false,  
+    currentInitiated:''})
 
   ChatModal(){
     let subject = this.state.currentSubject
@@ -360,6 +367,8 @@ class Notifications extends React.Component {
 
   openChatModal(subject, token)
   {
+    
+    fire.database().ref(`users/${fire.auth().currentUser.uid}/notifications/${token}/opened`).set(true);
     console.log(this.state.allNotifs, token)
     let conversations = []
     let prevDate = ""
@@ -389,7 +398,7 @@ class Notifications extends React.Component {
     for(var i=this.state.notifs.length-1; i>=0; i--)
     {
       items.push(
-        <tr>
+        <tr style={{backgroundColor: this.state.notifs[i].opened?'#fff' :'#78909c'}}>
           <td>
             <span class="mb-0 text-sm" >{this.state.notifs[i].sentByname}</span>  
           </td>
