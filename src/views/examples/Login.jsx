@@ -52,7 +52,7 @@ class Login extends React.Component {
     {
       fire.auth().signInWithEmailAndPassword(email, password)
       .then(()=>{
-        this.props.history.push('/admin/bookings')
+        this.props.history.push('/')
         console.log(fire.auth().currentUser.uid)
       }).catch(()=>{
         this.setState({loading:false})

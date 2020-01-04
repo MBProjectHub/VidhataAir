@@ -42,7 +42,7 @@ import fire from '../../config/firebaseConfig'
 
 class Register extends React.Component {
 
-  state = {users:null, loading:false}
+  state = {users:null, loading:false, approved:null, rejected:null, pending:null}
 
   componentDidMount()
   {
@@ -58,8 +58,37 @@ class Register extends React.Component {
       console.log(user_obj)
     }
     })
+
+    this.firebaseSignUpStatus()
+
   }
 
+  async firebaseSignUpStatus()
+  {
+    await fire.database().ref('signup').once('value',(domains)=>{
+          this.setState({approved:domains.val()['apprDom'], rejected:domains.val()['rejDom'], pending:domains.val()['pendDom']})
+  })
+  }
+
+  checkSignUpStatus(domain)
+  {
+    if(this.state.approved[domain]!==undefined)
+    {
+        return 'approved'
+    }
+    else if(this.state.rejected[domain]!==undefined)
+    {
+        return 'rejected'
+    }
+    else if(this.state.pending[domain]!==undefined)
+    {
+      return 'pending'
+    }
+    else
+    {
+      return 'new'
+    }
+  }
   firebaseRegister()
   {
     let name = document.getElementById('name').value;
@@ -89,7 +118,10 @@ class Register extends React.Component {
          approverMail = this.state.users[approver]
         console.log('arrover', this.state.users[approver])
         if(this.state.users[approver]!==undefined || approver==="-")
-        {
+        { 
+          let domain = email.split('@')[1].replace('.','^').toLowerCase() 
+          let status = this.checkSignUpStatus(domain)
+
           fire.auth().createUserWithEmailAndPassword(email, password)
           .then(()=>{
             fire.database().ref(`users/${fire.auth().currentUser.uid}`).set({
@@ -106,7 +138,16 @@ class Register extends React.Component {
               date_of_expiry: doe,
               approver: approverMail
             }, ()=>{
-              this.props.history.push('/admin/bookings')
+
+              if(status === "pending")
+              {
+                fire.database().ref(`signup/pendDom/${domain}`).set(parseInt(this.state.pending[domain])+1)
+              }
+              else if(status === "new")
+              {
+                fire.database().ref(`signup/pendDom/${domain}`).set(1)
+              }
+              this.props.history.push('/')
             })
           })
           .catch(()=>{
@@ -126,6 +167,8 @@ class Register extends React.Component {
       
     else
     {
+      console.log(name, email, password, approver, dob ,phone, department, seatpref, mealpref, passportno, doi,poi, doe)
+      this.setState({loading:false})
       alert("Please enter all the details");
     }
   }
@@ -143,6 +186,7 @@ class Register extends React.Component {
   }
 
   render() {
+    console.log(this.state)
     return (
       <>
         <Col lg="6" md="8">
