@@ -53,16 +53,46 @@ import {
 
 import {Button} from 'semantic-ui-react';
 import fire from '../../config/firebaseConfig'
+import './Sidebar.css'
 
 var ps;
 
 class Sidebar extends React.Component {
   state = {
-    collapseOpen: false
+    collapseOpen: false,
+    notifVal: 0
   };
+
+  
   constructor(props) {
     super(props);
     this.activeRoute.bind(this);
+  }
+
+  componentDidMount()
+  {
+    fire.auth().onAuthStateChanged((user) => {
+      if(user)
+      {
+    fire.database().ref(`users/${fire.auth().currentUser.uid}/notifications`).on('value',(notifs)=>{
+      console.log(notifs.val())
+      
+    let notifCounter = 0
+      if(notifs.val()!==null)
+      {
+      Object.values(notifs.val()).map(val=>{
+        console.log(val.opened)
+        if(val.opened===false)
+        {
+          notifCounter = notifCounter+ 1
+        }
+      })
+      
+    this.setState({notifVal: notifCounter})
+      }
+    })  
+  }
+})
   }
   // verifies if routeName is the one active (in browser input)
   activeRoute(routeName) {
@@ -84,19 +114,43 @@ class Sidebar extends React.Component {
   createLinks = routes => {
     return routes.map((prop, key) => {
       if(prop.layout !== "/auth")
-      return (
-        <NavItem key={key}>
-          <NavLink
-            to={prop.layout + prop.path}
-            tag={NavLinkRRD}
-            onClick={this.closeCollapse}
-            activeClassName="active"
-          >
-            <i className={prop.icon} />
-            {prop.name}
-          </NavLink>
-        </NavItem>
-      );
+      {
+      if(prop.name === "Notifications")
+      {
+        return (
+          <NavItem key={key}>
+            <NavLink
+              to={prop.layout + prop.path}
+              tag={NavLinkRRD}
+              onClick={this.closeCollapse}
+              activeClassName="active"
+            >
+              <i className={prop.icon} />
+              {prop.name}
+              <div className="circle">
+                  <p>{this.state.notifVal}</p>
+              </div>
+            </NavLink>
+          </NavItem>
+        );
+      }
+      else
+      {
+        return (
+          <NavItem key={key}>
+            <NavLink
+              to={prop.layout + prop.path}
+              tag={NavLinkRRD}
+              onClick={this.closeCollapse}
+              activeClassName="active"
+            >
+              <i className={prop.icon} />
+              {prop.name}
+            </NavLink>
+          </NavItem>
+        );
+      }
+    }
     });
   };
   render() {
