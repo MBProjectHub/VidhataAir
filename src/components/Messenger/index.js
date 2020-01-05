@@ -120,7 +120,7 @@ export default class Messenger extends React.Component {
         if(this.state.newBooking)
           this.setState({
             newBooking: false,
-            currentSelected: this.state.conversations[0].threadId,
+            currentSelected: this.state.conversations[0].name,
             currentProgressStage: this.state.conversations[0].stage,
             currentConversation: this.state.conversations[0]
           });
@@ -133,7 +133,7 @@ export default class Messenger extends React.Component {
         if(this.state.newBooking)
           this.setState({
             newBooking: false,
-            currentSelected: this.state.conversations[0].threadId,
+            currentSelected: this.state.conversations[0].name,
             currentProgressStage: this.state.conversations[0].stage,
             currentConversation: this.state.conversations[0]
           });
