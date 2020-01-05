@@ -166,7 +166,7 @@ export default class Messenger extends React.Component {
       Estage: -1,
       Ustage : 0,
       uid : fire.auth().currentUser.uid,
-      initId: '!' + str
+      initId: '-' + str
     }
     fire.database().ref('/bookings/active').update(newThread);
     let temp = {};
@@ -178,7 +178,7 @@ export default class Messenger extends React.Component {
   ClickRequest(conversation)
   {
     if(conversation.initId.charAt(0) == '!')
-      fire.database().ref('/bookings/active/'+conversation.threadId).update({ initId: '_' + conversation.initId.substring(1) })
+      fire.database().ref('/bookings/active/'+conversation.threadId).update({ initId: '-' + conversation.initId.substring(1) })
 
     console.log(conversation)
     this.state.conversations.forEach(conversation => {
@@ -343,7 +343,7 @@ export default class Messenger extends React.Component {
             <div className="conversation-info">
               <h1 className="conversation-title" style={{ fontWeight: conversation.initId.charAt(0) == '!'? 900 : 500 }}>{ conversation.name }</h1>
               <span className="text-primary mr-2" style={{ fontSize: 12, fontWeight: conversation.initId.charAt(0) == '!'? 900 : 300 }}>
-                {conversation.threadId.split('_')[3]+'-'+conversation.threadId.split('_')[2]+'-'+conversation.threadId.split('_')[1]}
+                {conversation.initId.split('_')[3]+'-'+conversation.initId.split('_')[2]+'-'+conversation.initId.split('_')[1]}
               </span>
               <p className="conversation-snippet" style={{ fontWeight: conversation.initId.charAt(0) == '!'? 900 : 300 }}>{ conversation.text }</p>
             </div>
