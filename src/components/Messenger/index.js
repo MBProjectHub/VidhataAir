@@ -21,6 +21,8 @@ export default class Messenger extends React.Component {
     approvals: {},
     myBookings: {},
     myApprovals: {},
+    searchResults: [],
+    searching: false,
     users: {},
     conversations:[],
     currentProgressStage:"",
@@ -34,6 +36,7 @@ export default class Messenger extends React.Component {
     fire.database().ref('/bookings').on('value', async b => {
       await fire.database().ref('/approvals').on('value', async a => {
             await fire.database().ref('/users').on('value', u => {
+              if(u.val() && u.val()[fire.auth().currentUser.uid])
               this.setState({
                 approvals: a.val(),
                 bookings: b.val(),
@@ -63,7 +66,12 @@ export default class Messenger extends React.Component {
     let update = true;
     let threads = [];
     if(this.state.bookings && this.state.bookings.active && this.state.myBookings)
-      threads = Object.keys(this.state.myBookings)
+    {
+      if(this.state.searching && this.state.searchResults)
+        threads = this.state.searchResults;
+      else
+        threads = Object.keys(this.state.myBookings)
+    }
     let approves = [];
     if(this.state.approvals && this.state.myApprovals)
       approves = Object.keys(this.state.myApprovals)
@@ -98,7 +106,9 @@ export default class Messenger extends React.Component {
             threadId: tid,
             initId: iid,
             name: this.state.users[uid].name,
-            department: this.state.users[uid].department,
+            meal: this.state.users[uid].mealPreference,
+            seat: this.state.users[uid].seatPreference,
+            phone: this.state.users[uid].phone,
             text: dept + ' > ' + arr,
             stage: st,
             handler: h,
@@ -362,7 +372,7 @@ export default class Messenger extends React.Component {
           <Button color="primary" type="button" onClick={() => this.newBooking()} style={{ margin: '5%', marginBottom: 0 }}>
             New Booking
           </Button>
-          <ConversationSearch placeholder="Search Bookings"/>
+          <ConversationSearch bookings={this.state.bookings} myBookings={this.state.myBookings} users={this.state.users} sendData={ ret => this.setState({ searchResults: ret.results, searching: ret.searching }, () => this.loadConvos())}/>
           {this.state.loading?<LinearProgress />:''}
           {this.loadLeftPane()}
         </div>

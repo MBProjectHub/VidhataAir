@@ -24,7 +24,7 @@ class ProfileCard extends React.Component {
                 <div className="col">
                 <span style={{color:'#272727'}} className="h2 font-weight-bold mb-0">{this.props.data.name}</span>
                   <CardTitle className="text-uppercase text-muted mb-0">
-                  {this.props.data.department}
+                  {this.props.data.seat} | {this.props.data.meal}<br/>{this.props.data.phone}
                   </CardTitle>
 
                 </div>

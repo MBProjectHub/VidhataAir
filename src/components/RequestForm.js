@@ -32,6 +32,13 @@ class Requestform extends React.Component {
     let temp = this.props.data.bookings.active[this.props.data.threadId];
     if(temp && temp.request.details != '-')
       this.setState(temp.request.details);
+    else {
+      let ts = this.getTimestamp(5,30);
+      this.setState({
+        ddate: ts.split('_')[0]+'-'+ts.split('_')[1]+'-'+ts.split('_')[2],
+        rdate: ts.split('_')[0]+'-'+ts.split('_')[1]+'-'+ts.split('_')[2]
+      })
+    }
   }
 
   getTimestamp(h,m) {
