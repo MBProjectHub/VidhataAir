@@ -3,7 +3,7 @@ import React from "react";
 import fire from './config/firebaseConfig';
 
 import { Message } from 'semantic-ui-react'
-export default class App extends React.Component 
+export default class App extends React.Component
 {
     state={approved:null, pending: null, rejected:null, loadingStatus:null}
     componentDidMount()
@@ -11,13 +11,13 @@ export default class App extends React.Component
         fire.auth().onAuthStateChanged((user) => {
             if(user)
             {
-                let domain = fire.auth().currentUser.email.split('@')[1].replace('.','^').toLowerCase() 
+                let domain = fire.auth().currentUser.email.split('@')[1].replace('.','^').toLowerCase()
                 fire.database().ref('signup').on('value',(domains)=>{
-                    if(domains.val()['apprDom'][domain]!==undefined)
+                    if(domains.val() && domains.val()['apprDom'] && domains.val()['apprDom'][domain])
                     {
                         this.props.history.push('/admin/bookings')
                     }
-                    else if(domains.val()['rejDom'][domain]!==undefined)
+                    else if(domains.val() && domains.val()['rejDom'] && domains.val()['rejDom'][domain])
                     {
                         this.setState({loadingStatus:'rejected'})
                     }
@@ -26,21 +26,21 @@ export default class App extends React.Component
                         this.setState({loadingStatus:'pending'})
                     }
                   })
-              
+
             }
             else
             {
                 this.props.history.push('/auth/login')
             }
           })
-        
+
     }
     renderLoading()
     {
         if(this.state.loadingStatus===null)
         {
             return (
-                <div className="bg-gradient-info" style={{display:'flex',width:window.innerWidth, height:window.innerHeight, 
+                <div className="bg-gradient-info" style={{display:'flex',width:window.innerWidth, height:window.innerHeight,
                 alignItems:'center', justifyContent:'center', transition: `opacity ${1500}ms ease-in-out`,}}>
                     <img src={require('./assets/img/brand/argon-react-white.png')} style={{width:'40%', height:'30%'}} />
                 </div>
@@ -48,7 +48,7 @@ export default class App extends React.Component
         }
         else if(this.state.loadingStatus==="rejected")
         {
-            return  <div className="bg-gradient-info" style={{display:'flex',width:window.innerWidth, height:window.innerHeight, 
+            return  <div className="bg-gradient-info" style={{display:'flex',width:window.innerWidth, height:window.innerHeight,
             alignItems:'center', justifyContent:'center', transition: `opacity ${1500}ms ease-in-out`,}}>
                 <Message warning>
                     <Message.Header>Your request is rejected</Message.Header>
@@ -58,7 +58,7 @@ export default class App extends React.Component
         }
         else
         {
-            return  <div className="bg-gradient-info" style={{display:'flex',width:window.innerWidth, height:window.innerHeight, 
+            return  <div className="bg-gradient-info" style={{display:'flex',width:window.innerWidth, height:window.innerHeight,
             alignItems:'center', justifyContent:'center', transition: `opacity ${1500}ms ease-in-out`,}}>
                 <Message warning>
                     <Message.Header>Your request is still pending</Message.Header>

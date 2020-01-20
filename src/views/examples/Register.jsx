@@ -72,22 +72,13 @@ class Register extends React.Component {
 
   checkSignUpStatus(domain)
   {
-    if(this.state.approved[domain]!==undefined)
-    {
+    if(this.state.approved && this.state.approved[domain])
         return 'approved'
-    }
-    else if(this.state.rejected[domain]!==undefined)
-    {
+    else if(this.state.rejected && this.state.rejected[domain])
         return 'rejected'
-    }
-    else if(this.state.pending[domain]!==undefined)
-    {
+    else if(this.state.pending && this.state.pending[domain])
       return 'pending'
-    }
-    else
-    {
-      return 'new'
-    }
+    return 'new'
   }
   firebaseRegister()
   {
@@ -105,10 +96,10 @@ class Register extends React.Component {
     let doi = document.getElementById('doi').value;
     let poi = document.getElementById('poi').value;
     let doe = document.getElementById('doe').value;
-    
-  
+
+
     if(name.length!==0 && email.length!==0 && password.length!==0 && dob.length!==0 && phone.length!==0 && department.length!==0 && passportno.length!==0 && doi.length!==0 && poi.length!==0 && doe.length !==0 && approver!==0)
-    { 
+    {
       if(this.state.users!== null)
       {
         let approverMail = ""
@@ -118,8 +109,8 @@ class Register extends React.Component {
          approverMail = this.state.users[approver]
         console.log('arrover', this.state.users[approver])
         if(this.state.users[approver]!==undefined || approver==="-")
-        { 
-          let domain = email.split('@')[1].replace('.','^').toLowerCase() 
+        {
+          let domain = email.split('@')[1].replace('.','^').toLowerCase()
           let status = this.checkSignUpStatus(domain)
 
           fire.auth().createUserWithEmailAndPassword(email, password)
@@ -164,7 +155,7 @@ class Register extends React.Component {
         }
 
       }
-      
+
     else
     {
       console.log(name, email, password, approver, dob ,phone, department, seatpref, mealpref, passportno, doi,poi, doe)
@@ -177,12 +168,12 @@ class Register extends React.Component {
   {
     if(this.state.loading)
     return <CircularProgress />
-   
+
     else
    return <Button className="mt-4" color="primary" type="button" onClick={()=>{this.setState({loading:true},this.firebaseRegister.bind(this)) }}>
    Create account
  </Button>
-    
+
   }
 
   render() {
@@ -442,7 +433,7 @@ class Register extends React.Component {
                       </Row>
                     </div>
                   </Form>
-              
+
                 <div className="text-center">
                   {this.renderLoader()}
                 </div>
