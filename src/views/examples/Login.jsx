@@ -19,19 +19,19 @@ import React from "react";
 
 // reactstrap components
 import {
-  Button,
-  Card,
-  CardHeader,
-  CardBody,
-  FormGroup,
-  Form,
-  Input,
-  InputGroupAddon,
-  InputGroupText,
-  InputGroup,
-  Row,
-  Spinner,
-  Col
+    Button,
+    Card,
+    CardHeader,
+    CardBody,
+    FormGroup,
+    Form,
+    Input,
+    InputGroupAddon,
+    InputGroupText,
+    InputGroup,
+    Row,
+    Spinner,
+    Col
 } from "reactstrap";
 
 import fire from 'firebase'
@@ -41,83 +41,103 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 class Login extends React.Component {
 
 
-  state = {loading:false}
-  
-  firebaseLogin()
-  {
-    let email = document.getElementById('email').value;
-    let password = document.getElementById('password').value;
-
-    if(email.length!==0 && password.length!==0)
-    {
-      fire.auth().signInWithEmailAndPassword(email, password)
-      .then(()=>{
-        this.props.history.push('/')
-        console.log(fire.auth().currentUser.uid)
-      }).catch(()=>{
-        this.setState({loading:false})
-      alert("Wrong credentials");
-      })
+    state = {
+        loading: false
     }
-    else
-    { 
-      this.setState({loading:false})
-      alert("Please enter all the details");
+
+    firebaseLogin() {
+        let email = document.getElementById('email').value;
+        let password = document.getElementById('password').value;
+
+        if (email.length !== 0 && password.length !== 0) {
+            fire.database().ref('users').orderByChild('email').equalTo(email).once('value').then((res) => {
+                if (res.val()) {
+                    if (!res.val()[Object.keys(res.val())[0]]['admin']) {
+                        fire.auth().signInWithEmailAndPassword(email, password).then(() => {
+                            this.props.history.push('/')
+                            console.log(fire.auth().currentUser.uid)
+                        }).catch(() => {
+                            this.setState({loading: false})
+                            alert("Wrong credentials");
+                        })
+                    } else {
+                        alert('Not autherised')
+                    }
+                    this.setState({loading: false})
+                } else {
+                    alert('Email not registered.')
+                    this.setState({loading: false})
+                }
+            })
+        } else {
+            this.setState({loading: false})
+            alert("Please enter all the details");
+        }
     }
-  }
 
-  
-  renderLoader()
-  {
-    if(this.state.loading)
-     return <CircularProgress />
-    
-     else
-    return <Button className="my-4" color="primary" type="button" onClick={()=>{this.setState({loading:true}, this.firebaseLogin.bind(this))}}>
-    Sign in
-  </Button>
-  }
 
-  render() {
-    return (
-      <>
-        <Col lg="5" md="7">
-          <Card className="bg-secondary shadow border-0">
-            <CardBody className="px-lg-5 py-lg-5">
-              <Form role="form">
-                <FormGroup className="mb-3">
-                  <InputGroup className="input-group-alternative">
-                    <InputGroupAddon addonType="prepend">
-                      <InputGroupText>
-                        <i className="ni ni-email-83" />
-                      </InputGroupText>
-                    </InputGroupAddon>
-                    <Input id="email" placeholder="Email" type="email" />
-                  </InputGroup>
-                </FormGroup>
-                <FormGroup>
-                  <InputGroup className="input-group-alternative">
-                    <InputGroupAddon addonType="prepend">
-                      <InputGroupText>
-                        <i className="ni ni-lock-circle-open" />
-                      </InputGroupText>
-                    </InputGroupAddon>
-                    <Input id="password" placeholder="Password" type="password" />
-                  </InputGroup>
-                </FormGroup>
-                <div className="text-center">
+    renderLoader() {
+        if (this.state.loading) 
+            return <CircularProgress/>
 
-                  {this.renderLoader()}
-                  
-                </div>
-              </Form>
-              
-            </CardBody>
-          </Card>
-        </Col>
-      </>
-    );
-  }
+         else 
+            return <Button className="my-4" color="primary" type="button"
+                onClick={
+                    () => {
+                        this.setState({
+                            loading: true
+                        }, this.firebaseLogin.bind(this))
+                    }
+            }>
+                Sign in
+            </Button>
+
+
+        
+
+
+    }
+
+    render() {
+        return (
+            <>
+                <Col lg="5" md="7">
+                    <Card className="bg-secondary shadow border-0">
+                        <CardBody className="px-lg-5 py-lg-5">
+                            <Form role="form">
+                                <FormGroup className="mb-3">
+                                    <InputGroup className="input-group-alternative">
+                                        <InputGroupAddon addonType="prepend">
+                                            <InputGroupText>
+                                                <i className="ni ni-email-83"/>
+                                            </InputGroupText>
+                                        </InputGroupAddon>
+                                        <Input id="email" placeholder="Email" type="email"/>
+                                    </InputGroup>
+                                </FormGroup>
+                                <FormGroup>
+                                    <InputGroup className="input-group-alternative">
+                                        <InputGroupAddon addonType="prepend">
+                                            <InputGroupText>
+                                                <i className="ni ni-lock-circle-open"/>
+                                            </InputGroupText>
+                                        </InputGroupAddon>
+                                        <Input id="password" placeholder="Password" type="password"/>
+                                    </InputGroup>
+                                </FormGroup>
+                                <div className="text-center">
+
+                                    {
+                                    this.renderLoader()
+                                } </div>
+                            </Form>
+
+                        </CardBody>
+                    </Card>
+                </Col>
+            </>
+        );
+    }
 }
 
 export default Login;
