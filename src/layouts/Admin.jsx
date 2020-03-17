@@ -45,7 +45,9 @@ class Admin extends React.Component {
                 fire.database().ref(`users/${
                     fire.auth().currentUser.uid
                 }`).on('value', (user) => {
-                    this.setState({userName: user.val().name})
+                    this.setState({
+                        userName: user.val().firstName + " " + user.val().lastName
+                    })
                 })
             } else {
                 this.props.history.push('/auth/login')

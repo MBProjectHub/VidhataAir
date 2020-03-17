@@ -23,47 +23,45 @@ import Register from "views/examples/Register.jsx";
 import Login from "views/examples/Login.jsx";
 
 var routes = [
-  {
-    path: "/bookings",
-    name: "Bookings",
-    icon: "ni ni-send text-pink",
-    component: Bookings,
-    layout: "/admin"
-  },
-  {
-    path: "/notifications",
-    name: "Notifications",
-    icon: "ni ni-bell-55 text-yellow",
-    component: Notifications,
-    layout: "/admin"
-  },
-  {
-    path: "/profile",
-    name: "Profile",
-    icon: "ni ni-single-02 text-info",
-    component: Profile,
-    layout: "/admin"
-  },
-  {
-    path: "/aboutus",
-    name: "About Us",
-    icon: "ni ni-bell-55 text-yellow",
-    component: AboutUs,
-    layout: "/admin"
-  },
-  {
-    path: "/login",
-    name: "Login",
-    icon: "ni ni-key-25 text-info",
-    component: Login,
-    layout: "/auth"
-  },
-  {
-    path: "/register",
-    name: "Register",
-    icon: "ni ni-circle-08 text-pink",
-    component: Register,
-    layout: "/auth"
-  }
+    {
+        path: "/bookings",
+        name: "Bookings",
+        icon: "ni ni-send text-pink",
+        component: Bookings,
+        layout: "/admin"
+    },
+    {
+        path: "/notifications",
+        name: "Notifications",
+        icon: "ni ni-bell-55 text-yellow",
+        component: Notifications,
+        layout: "/admin"
+    },
+    {
+        path: "/profile",
+        name: "Profile",
+        icon: "ni ni-single-02 text-info",
+        component: Profile,
+        layout: "/admin"
+    },
+    {
+        path: "/aboutus",
+        name: "About Us",
+        icon: "ni ni-bell-55 text-yellow",
+        component: AboutUs,
+        layout: "/admin"
+    }, {
+        path: "/login",
+        name: "Login",
+        icon: "ni ni-key-25 text-info",
+        component: Login,
+        layout: "/auth"
+    }, {
+        path: "/register",
+        name: "Register",
+        icon: "ni ni-circle-08 text-pink",
+        component: Register,
+        layout: "/auth"
+    }
 ];
 export default routes;

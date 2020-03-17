@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
+import {BrowserRouter, Route, Switch, Redirect} from "react-router-dom";
 
 
 import "assets/vendor/nucleo/css/nucleo.css";
@@ -12,13 +12,22 @@ import AuthLayout from "layouts/Auth.jsx";
 import App from './App'
 
 
-ReactDOM.render(
-  <BrowserRouter>
-    <Switch>
-      <Route path="/admin" render={props => <AdminLayout {...props} />} />
-      <Route path="/auth" render={props => <AuthLayout {...props} />} />
-      <Route path="/" render={props => <App {...props} />} />
-    </Switch>
-  </BrowserRouter>,
-  document.getElementById("root")
+ReactDOM.render (
+    <BrowserRouter>
+        <Switch>
+            <Route path="/admin"
+                render={
+                    props => <AdminLayout {...props}/>}/>
+                }/>
+            <Route path="/auth"
+                render={
+                    props => <AuthLayout {...props}/>}/>
+                }/>
+            <Route path="/"
+                render={
+                    props => <App {...props}/>}/>
+                }/>
+        </Switch>
+</BrowserRouter>,
+    document.getElementById("root")
 );
