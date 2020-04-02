@@ -228,7 +228,7 @@ export default class Messenger extends React.Component {
         .ref("/bookings/active/" + conversation.threadId)
         .update({ initId: "-" + conversation.initId.substring(1) });
 
-    console.log(conversation);
+    // console.log(conversation);
     this.state.conversations.forEach(conversation => {
       document.getElementById(conversation.threadId).style.background = "#fff";
     });
@@ -391,7 +391,7 @@ export default class Messenger extends React.Component {
         >
           <RequestForm
             editable={true}
-            load={() => this.setState({ loading: true })}
+            load={loading => this.setState({ loading: loading })}
             data={{
               ...this.state.currentConversation,
               bookings: this.state.bookings
