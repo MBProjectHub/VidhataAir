@@ -50,7 +50,7 @@ class Auth extends React.Component {
   };
   render() {
     return (
-      <>
+      <div>
         <div className="main-content">
           <AuthNavbar />
           <div className="header bg-gradient-info py-7 py-lg-8">
@@ -80,7 +80,7 @@ class Auth extends React.Component {
           </Container>
         </div>
         <AuthFooter />
-      </>
+        </div>
     );
   }
 }

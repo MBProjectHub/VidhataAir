@@ -179,7 +179,7 @@ class Register extends React.Component {
   render() {
     console.log(this.state)
     return (
-      <>
+      <div>
         <Col lg="6" md="8">
           <Card className="bg-secondary shadow border-0">
             <CardBody className="px-lg-5 py-lg-5">
@@ -440,7 +440,7 @@ class Register extends React.Component {
             </CardBody>
           </Card>
         </Col>
-      </>
+      </div>
     );
   }
 }

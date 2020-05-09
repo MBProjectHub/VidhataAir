@@ -64,7 +64,7 @@
     "react-dropzone": "^10.1.10",
     "react-google-maps": "9.4.5",
     "react-router-dom": "4.3.1",
-    "react-scripts": "2.1.8",
+    "react-scripts": "1.1.4",
     "reactstrap": "7.1.0",
     "semantic-ui-react": "^0.88.1",
     "shave": "^2.5.6"
