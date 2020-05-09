@@ -11,7 +11,7 @@ export default class ConversationSearch extends React.Component {
   }
 
   static getDerivedStateFromProps(props, state) {
-    if(props.bookings!==null && props.bookings && props.bookings.active)
+    if(props.bookings && Object.keys(props.bookings) != 0 && props.bookings.active)
       return {
         bookings: props.bookings,
         threadIds: Object.keys(props.myBookings),
